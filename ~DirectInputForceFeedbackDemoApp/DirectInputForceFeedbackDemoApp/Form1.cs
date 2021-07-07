@@ -23,16 +23,26 @@ namespace DirectInputForceFeedbackDemoApp {
 
     private void ButtonEnumerateDevices_Click(object sender, EventArgs e) {
       DIManager.EnumerateDevices();
-      System.Diagnostics.Debug.WriteLine( Convert.ToString( DIManager.devices.Count() ) );
+      //System.Diagnostics.Debug.WriteLine( Convert.ToString( DIManager.devices.Count() ) );
       ComboBoxDevices.Items.Clear();
       foreach ( var device in DIManager.devices) {
         ComboBoxDevices.Items.Add( device.productName );
       }
-      // Update ComboBox logic here
     }
 
     private void ComboBoxDevices_SelectedIndexChanged(object sender, EventArgs e) {
       // Switch device logic 
+      System.Diagnostics.Debug.WriteLine( $"{ComboBoxDevices.SelectedIndex}:{ComboBoxDevices.Text}" );
+
+      var SelectedDevice = DIManager.devices[ComboBoxDevices.SelectedIndex];
+
+      string CurDeviceInfo = $@"deviceType: {SelectedDevice.deviceType};
+guidInstance: {SelectedDevice.guidInstance};
+guidProduct: {SelectedDevice.guidProduct};
+instanceName: {SelectedDevice.instanceName};
+productName: {SelectedDevice.productName};";
+
+      label1.Text = CurDeviceInfo;
     }
   }
 }
