@@ -29,31 +29,45 @@ namespace DirectInputForceFeedbackDemoApp
     /// </summary>
     private void InitializeComponent()
     {
-      this.textBox1 = new System.Windows.Forms.TextBox();
+      this.ComboBoxDevices = new System.Windows.Forms.ComboBox();
+      this.ButtonEnumerateDevices = new System.Windows.Forms.Button();
       this.SuspendLayout();
       // 
-      // textBox1
+      // ComboBoxDevices
       // 
-      this.textBox1.Location = new System.Drawing.Point(13, 13);
-      this.textBox1.Name = "textBox1";
-      this.textBox1.Size = new System.Drawing.Size(150, 31);
-      this.textBox1.TabIndex = 0;
+      this.ComboBoxDevices.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.ComboBoxDevices.FormattingEnabled = true;
+      this.ComboBoxDevices.Location = new System.Drawing.Point(13, 13);
+      this.ComboBoxDevices.Name = "ComboBoxDevices";
+      this.ComboBoxDevices.Size = new System.Drawing.Size(440, 33);
+      this.ComboBoxDevices.TabIndex = 1;
+      this.ComboBoxDevices.SelectedIndexChanged += new System.EventHandler(this.ComboBoxDevices_SelectedIndexChanged);
+      // 
+      // ButtonEnumerateDevices
+      // 
+      this.ButtonEnumerateDevices.Location = new System.Drawing.Point(460, 13);
+      this.ButtonEnumerateDevices.Name = "ButtonEnumerateDevices";
+      this.ButtonEnumerateDevices.Size = new System.Drawing.Size(40, 34);
+      this.ButtonEnumerateDevices.TabIndex = 2;
+      this.ButtonEnumerateDevices.Text = "🔄";
+      this.ButtonEnumerateDevices.UseVisualStyleBackColor = true;
+      this.ButtonEnumerateDevices.Click += new System.EventHandler(this.ButtonEnumerateDevices_Click);
       // 
       // Form1
       // 
-      this.ClientSize = new System.Drawing.Size(699, 441);
-      this.Controls.Add(this.textBox1);
+      this.ClientSize = new System.Drawing.Size(698, 441);
+      this.Controls.Add(this.ButtonEnumerateDevices);
+      this.Controls.Add(this.ComboBoxDevices);
       this.Name = "Form1";
-      this.Text = "Direct Input Demo App";
+      this.Text = "Direct Input Explorer";
       this.Load += new System.EventHandler(this.Form1_Load);
       this.ResumeLayout(false);
-      this.PerformLayout();
 
     }
 
     #endregion
-
-    private System.Windows.Forms.TextBox textBox1;
+    private System.Windows.Forms.ComboBox ComboBoxDevices;
+    private System.Windows.Forms.Button ButtonEnumerateDevices;
   }
 }
 
