@@ -149,40 +149,55 @@ namespace DirectInputManager {
 
   [Serializable]
   public struct FlatJoyState2 {
-    public ulong buttonsA; // Buttons seperated into banks of 64-Bits to fit into Unsigned 64-bit integer
-    public ulong buttonsB; // Buttons seperated into banks of 64-Bits to fit into Unsigned 64-bit integer
-    public ushort lX; // X-axis
-    public ushort lY; // Y-axis
-    public ushort lZ; // Z-axis
-    public ushort lU; // U-axis
-    public ushort lV; // V-axis
-    public ushort lRx; // X-axis rotation
-    public ushort lRy; // Y-axis rotation
-    public ushort lRz; // Z-axis rotation
-    public ushort lVX; // X-axis velocity
-    public ushort lVY; // Y-axis velocity
-    public ushort lVZ; // Z-axis velocity
-    public ushort lVU; // U-axis velocity
-    public ushort lVV; // V-axis velocity
-    public ushort lVRx; // X-axis angular velocity
-    public ushort lVRy; // Y-axis angular velocity
-    public ushort lVRz; // Z-axis angular velocity
-    public ushort lAX; // X-axis acceleration
-    public ushort lAY; // Y-axis acceleration
-    public ushort lAZ; // Z-axis acceleration
-    public ushort lAU; // U-axis acceleration
-    public ushort lAV; // V-axis acceleration
-    public ushort lARx; // X-axis angular acceleration
-    public ushort lARy; // Y-axis angular acceleration
-    public ushort lARz; // Z-axis angular acceleration
-    public ushort lFX; // X-axis force
-    public ushort lFY; // Y-axis force
-    public ushort lFZ; // Z-axis force
-    public ushort lFU; // U-axis force
-    public ushort lFV; // V-axis force
-    public ushort lFRx; // X-axis torque
-    public ushort lFRy; // Y-axis torque
-    public ushort lFRz; // Z-axis torque
-    public short rgdwPOV; // Store each DPAD in chunks of 4 bits inside 16-bit short     
+    public UInt64 buttonsA; // Buttons seperated into banks of 64-Bits to fit into Unsigned 64-bit integer
+    public UInt64 buttonsB; // Buttons seperated into banks of 64-Bits to fit into Unsigned 64-bit integer
+    public UInt32 lX;       // X-axis
+    public UInt32 lY;       // Y-axis
+    public UInt32 lZ;       // Z-axis
+    public UInt32 lU;       // U-axis
+    public UInt32 lV;       // V-axis
+    public UInt32 lRx;      // X-axis rotation
+    public UInt32 lRy;      // Y-axis rotation
+    public UInt32 lRz;      // Z-axis rotation
+    public UInt32 lVX;      // X-axis velocity
+    public UInt32 lVY;      // Y-axis velocity
+    public UInt32 lVZ;      // Z-axis velocity
+    public UInt32 lVU;      // U-axis velocity
+    public UInt32 lVV;      // V-axis velocity
+    public UInt32 lVRx;     // X-axis angular velocity
+    public UInt32 lVRy;     // Y-axis angular velocity
+    public UInt32 lVRz;     // Z-axis angular velocity
+    public UInt32 lAX;      // X-axis acceleration
+    public UInt32 lAY;      // Y-axis acceleration
+    public UInt32 lAZ;      // Z-axis acceleration
+    public UInt32 lAU;      // U-axis acceleration
+    public UInt32 lAV;      // V-axis acceleration
+    public UInt32 lARx;     // X-axis angular acceleration
+    public UInt32 lARy;     // Y-axis angular acceleration
+    public UInt32 lARz;     // Z-axis angular acceleration
+    public UInt32 lFX;      // X-axis force
+    public UInt32 lFY;      // Y-axis force
+    public UInt32 lFZ;      // Z-axis force
+    public UInt32 lFU;      // U-axis force
+    public UInt32 lFV;      // V-axis force
+    public UInt32 lFRx;     // X-axis torque
+    public UInt32 lFRy;     // Y-axis torque
+    public UInt32 lFRz;     // Z-axis torque
+    public UInt16 rgdwPOV;  // Store each DPAD in chunks of 4 bits inside 16-bit UInt   
+  }
+
+  [Serializable]
+  public struct DIDEVCAPS {
+    UInt32 dwSize;
+    UInt32 dwFlags;
+    UInt32 dwDevType;
+    UInt32 dwAxes;
+    UInt32 dwButtons;
+    UInt32 dwPOVs;
+    UInt32 dwFFSamplePeriod;
+    UInt32 dwFFMinTimeResolution;
+    UInt32 dwFirmwareRevision;
+    UInt32 dwHardwareRevision;
+    UInt32 dwFFDriverVersion;
   }
 }

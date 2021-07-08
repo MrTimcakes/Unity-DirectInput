@@ -35,14 +35,18 @@ namespace DirectInputForceFeedbackDemoApp {
       System.Diagnostics.Debug.WriteLine( $"{ComboBoxDevices.SelectedIndex}:{ComboBoxDevices.Text}" );
 
       var SelectedDevice = DIManager.devices[ComboBoxDevices.SelectedIndex];
+      label1.Text = $"deviceType: {SelectedDevice.deviceType}\nguidInstance: {SelectedDevice.guidInstance}\nguidProduct: {SelectedDevice.guidProduct}\ninstanceName: {SelectedDevice.instanceName}\nproductName: {SelectedDevice.productName}";
 
-      string CurDeviceInfo = $@"deviceType: {SelectedDevice.deviceType};
-guidInstance: {SelectedDevice.guidInstance};
-guidProduct: {SelectedDevice.guidProduct};
-instanceName: {SelectedDevice.instanceName};
-productName: {SelectedDevice.productName};";
-
-      label1.Text = CurDeviceInfo;
     }
+    private void ButtonAttatch_Click(object sender, EventArgs e) {
+      DIManager.Attach( DIManager.devices[ComboBoxDevices.SelectedIndex] ); // Connect to device
+    }
+
+    private void ButtonPoll_Click(object sender, EventArgs e) {
+      /// Poll Device
+      FlatJoyState2 DeviceState = DIManager.Poll(DIManager.devices[ComboBoxDevices.SelectedIndex]);
+      label1.Text = $"buttonsA: {DeviceState.buttonsA}\nbuttonsB: {DeviceState.buttonsB}\nlX: {DeviceState.lX}\nlY: {DeviceState.lY}\nlZ: {DeviceState.lZ}\nlU: {DeviceState.lU}\nlV: {DeviceState.lV}\nlRx: {DeviceState.lRx}\nlRy: {DeviceState.lRy}\nlRz: {DeviceState.lRz}\nlVX: {DeviceState.lVX}\nlVY: {DeviceState.lVY}\nlVZ: {DeviceState.lVZ}\nlVU: {DeviceState.lVU}\nlVV: {DeviceState.lVV}\nlVRx: {DeviceState.lVRx}\nlVRy: {DeviceState.lVRy}\nlVRz: {DeviceState.lVRz}\nlAX: {DeviceState.lAX}\nlAY: {DeviceState.lAY}\nlAZ: {DeviceState.lAZ}\nlAU: {DeviceState.lAU}\nlAV: {DeviceState.lAV}\nlARx: {DeviceState.lARx}\nlARy: {DeviceState.lARy}\nlARz: {DeviceState.lARz}\nlFX: {DeviceState.lFX}\nlFY: {DeviceState.lFY}\nlFZ: {DeviceState.lFZ}\nlFU: {DeviceState.lFU}\nlFV: {DeviceState.lFV}\nlFRx: {DeviceState.lFRx}\nlFRy: {DeviceState.lFRy}\nlFRz: {DeviceState.lFRz}\nrgdwPOV: {DeviceState.rgdwPOV}\n";
+    }
+
   }
 }
