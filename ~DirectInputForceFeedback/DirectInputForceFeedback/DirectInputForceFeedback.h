@@ -18,8 +18,52 @@ extern "C" { // Everything to be made available by the DLL
 		LPSTR productName;
 	};
 
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT StartDirectInput();
-	DIRECTINPUTFORCEFEEDBACK_API DeviceInfo* EnumerateDevices(int& deviceCount);
+  struct FlatJoyState2 {
+    unsigned long long buttonsA; // Buttons seperated into banks of 64-Bits to fit into Unsigned 64-bit integer
+    unsigned long long buttonsB; // Buttons seperated into banks of 64-Bits to fit into Unsigned 64-bit integer
+    long lX;       // X-axis
+    long lY;       // Y-axis
+    long lZ;       // Z-axis
+    long lU;       // U-axis
+    long lV;       // V-axis
+    long lRx;      // X-axis rotation
+    long lRy;      // Y-axis rotation
+    long lRz;      // Z-axis rotation
+    long lVX;      // X-axis velocity
+    long lVY;      // Y-axis velocity
+    long lVZ;      // Z-axis velocity
+    long lVU;      // U-axis velocity
+    long lVV;      // V-axis velocity
+    long lVRx;     // X-axis angular velocity
+    long lVRy;     // Y-axis angular velocity
+    long lVRz;     // Z-axis angular velocity
+    long lAX;      // X-axis acceleration
+    long lAY;      // Y-axis acceleration
+    long lAZ;      // Z-axis acceleration
+    long lAU;      // U-axis acceleration
+    long lAV;      // V-axis acceleration
+    long lARx;     // X-axis angular acceleration
+    long lARy;     // Y-axis angular acceleration
+    long lARz;     // Z-axis angular acceleration
+    long lFX;      // X-axis force
+    long lFY;      // Y-axis force
+    long lFZ;      // Z-axis force
+    long lFU;      // U-axis force
+    long lFV;      // V-axis force
+    long lFRx;     // X-axis torque
+    long lFRy;     // Y-axis torque
+    long lFRz;     // Z-axis torque
+    short rgdwPOV; // Store each DPAD in chunks of 4 bits inside 16-bit short     
+  };
+
+  struct DIDEVCAPS;
+
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT          StartDirectInput();
+	DIRECTINPUTFORCEFEEDBACK_API DeviceInfo*      EnumerateDevices(int& deviceCount);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT          CreateDevice(LPCSTR guidInstance);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT          RemoveDevice(LPCSTR guidInstance);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT          GetDeviceState(LPCSTR guidInstance, FlatJoyState2& deviceState);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT          GetDeviceCapabilities(LPCSTR guidInstance, DIDEVCAPS& DeviceCapabilitiesOut);
 }
 
 
@@ -41,3 +85,6 @@ struct WindowData {
 HWND FindMainWindow(unsigned long process_id);
 BOOL CALLBACK _EnumWindowsCallback(HWND handle, LPARAM lParam);
 BOOL IsMainWindow(HWND handle);
+GUID LPCSTRGUIDtoGUID(LPCSTR guidInstance);
+FlatJoyState2 FlattenDIJOYSTATE2(DIJOYSTATE2 DeviceState);
+bool GUIDMatch(LPCSTR guidInstance, LPDIRECTINPUTDEVICE8 Device);
