@@ -9,9 +9,7 @@ std::vector<LPDIRECTINPUTDEVICE8> ActiveDevices; // Store all of the connected d
 
 /// Create the _DirectInput global
 HRESULT StartDirectInput() {
-  if (_DirectInput != NULL) {
-    return S_OK;
-  }
+  if (_DirectInput != NULL) { return S_OK; } // Already initialised
   return DirectInput8Create(
     GetModuleHandle(NULL),
     DIRECTINPUT_VERSION,
@@ -35,8 +33,7 @@ DeviceInfo* EnumerateDevices(int& deviceCount) {
   if (_DeviceInstances.size() > 0) {
     deviceCount = (int)_DeviceInstances.size();
     return &_DeviceInstances[0];
-  }
-  else {
+  } else {
     deviceCount = 0;
   }
   return NULL;
@@ -77,16 +74,12 @@ BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* pInst, void* pContext
 HRESULT CreateDevice(LPCSTR guidInstance) {
   // If device with GUID already exists, destroy ir
   //if (g_pDevice) { FreeFFBDevice(); }
-
-  GUID deviceGuid = LPCSTRGUIDtoGUID(guidInstance);
-
   LPDIRECTINPUTDEVICE8 DIDevice;
-  LPDIRECTINPUTDEVICE8W test;
 
   HRESULT hr;
   HWND hWnd = FindMainWindow(GetCurrentProcessId());
 
-  if (FAILED(hr = _DirectInput->CreateDevice(deviceGuid, &DIDevice, NULL))) { return hr; }
+  if (FAILED(hr = _DirectInput->CreateDevice(LPCSTRGUIDtoGUID(guidInstance), &DIDevice, NULL))) { return hr; }
   if (FAILED(hr = DIDevice->SetDataFormat(&c_dfDIJoystick2))) { return hr; }
   if (FAILED(hr = DIDevice->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND))) { return hr; }
   if (FAILED(hr = DIDevice->Acquire())) { return hr; }
@@ -119,8 +112,20 @@ HRESULT GetDeviceState(LPCSTR guidInstance, FlatJoyState2& deviceState) {
   for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
     if (GUIDMatch(guidInstance, Device)) {
       DIJOYSTATE2 DeviceStateRaw;
-      Device->GetDeviceState(sizeof(DIJOYSTATE2), &DeviceStateRaw); // Fetch the device State
+      hr = Device->GetDeviceState(sizeof(DIJOYSTATE2), &DeviceStateRaw); // Fetch the device State
       deviceState = FlattenDIJOYSTATE2(DeviceStateRaw); // Convert to a friendlier format (Nested arrays are more difficult to check for change)
+    }
+  }
+  return hr;
+}
+
+// Fetch the Device State, give GUID of the Device (Must already be created by CreateDevice) and out DIJOYSTATE2
+HRESULT GetDeviceStateRaw(LPCSTR guidInstance, DIJOYSTATE2& deviceState) {
+  HRESULT hr = E_FAIL;
+
+  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
+    if (GUIDMatch(guidInstance, Device)) {
+      hr = Device->GetDeviceState(sizeof(DIJOYSTATE2), &deviceState); // Fetch the device State
     }
   }
   return hr;
@@ -193,69 +198,70 @@ GUID LPCSTRGUIDtoGUID(LPCSTR guidInstance) {
 }
 
 FlatJoyState2 FlattenDIJOYSTATE2(DIJOYSTATE2 DeviceState) {
-  FlatJoyState2 state; // Hold the flattend state
+  FlatJoyState2 state = FlatJoyState2(); // Hold the flattend state
+  //state.buttonsA = 0;
 
   // ButtonA
   for (int i = 0; i < 64; i++) { // In banks of 64, shift in the sate of each button BankA 0-63
     if (DeviceState.rgbButtons[i] == 128) // 128 = Button pressed
-      state.buttonsA |= (unsigned long long)(1 << i); // Shift in a 1 to the button at index i
+      state.buttonsA |= (unsigned long long)1 << i; // Shift in a 1 to the button at index i
   }
   // ButtonB
   for (int i = 64; i < 128; i++) { // 2nd bank of buttons from 64-128
     if (DeviceState.rgbButtons[i] == 128) // 128 = Button pressed
-      state.buttonsB |= (unsigned long long)(1 << i); // Shift in a 1 to the button at index i
+      state.buttonsB |= (unsigned long long)1 << i; // Shift in a 1 to the button at index i
   }
 
-  state.lX = (long)DeviceState.lX; // X-axis
-  state.lY = (long)DeviceState.lY; // Y-axis
-  state.lZ = (long)DeviceState.lZ; // Z-axis
+  state.lX = DeviceState.lX; // X-axis
+  state.lY = DeviceState.lY; // Y-axis
+  state.lZ = DeviceState.lZ; // Z-axis
   // rglSlider
-  state.lU = (long)DeviceState.rglSlider[0]; // U-axis
-  state.lV = (long)DeviceState.rglSlider[1]; // V-axis
+  state.lU = DeviceState.rglSlider[0]; // U-axis
+  state.lV = DeviceState.rglSlider[1]; // V-axis
 
-  state.lRx = (long)DeviceState.lRx; // X-axis rotation
-  state.lRy = (long)DeviceState.lRy; // Y-axis rotation
-  state.lRz = (long)DeviceState.lRz; // Z-axis rotation
+  state.lRx = DeviceState.lRx; // X-axis rotation
+  state.lRy = DeviceState.lRy; // Y-axis rotation
+  state.lRz = DeviceState.lRz; // Z-axis rotation
 
-  state.lVX = (long)DeviceState.lVX; // X-axis velocity
-  state.lVY = (long)DeviceState.lVY; // Y-axis velocity
-  state.lVZ = (long)DeviceState.lVZ; // Z-axis velocity
+  state.lVX = DeviceState.lVX; // X-axis velocity
+  state.lVY = DeviceState.lVY; // Y-axis velocity
+  state.lVZ = DeviceState.lVZ; // Z-axis velocity
   // rglVSlider
-  state.lVU = (long)DeviceState.rglVSlider[0]; // U-axis velocity
-  state.lVV = (long)DeviceState.rglVSlider[1]; // V-axis velocity
+  state.lVU = DeviceState.rglVSlider[0]; // U-axis velocity
+  state.lVV = DeviceState.rglVSlider[1]; // V-axis velocity
 
-  state.lVRx = (long)DeviceState.lVRx; // X-axis angular velocity
-  state.lVRy = (long)DeviceState.lVRy; // Y-axis angular velocity
-  state.lVRz = (long)DeviceState.lVRz; // Z-axis angular velocity
+  state.lVRx = DeviceState.lVRx; // X-axis angular velocity
+  state.lVRy = DeviceState.lVRy; // Y-axis angular velocity
+  state.lVRz = DeviceState.lVRz; // Z-axis angular velocity
 
-  state.lAX = (long)DeviceState.lAX; // X-axis acceleration
-  state.lAY = (long)DeviceState.lAY; // Y-axis acceleration
-  state.lAZ = (long)DeviceState.lAZ; // Z-axis acceleration
+  state.lAX = DeviceState.lAX; // X-axis acceleration
+  state.lAY = DeviceState.lAY; // Y-axis acceleration
+  state.lAZ = DeviceState.lAZ; // Z-axis acceleration
   // rglASlider
-  state.lAU = (long)DeviceState.rglASlider[0]; // U-axis acceleration
-  state.lAV = (long)DeviceState.rglASlider[1]; // V-axis acceleration
+  state.lAU = DeviceState.rglASlider[0]; // U-axis acceleration
+  state.lAV = DeviceState.rglASlider[1]; // V-axis acceleration
 
-  state.lARx = (long)DeviceState.lARx; // X-axis angular acceleration
-  state.lARy = (long)DeviceState.lARy; // Y-axis angular acceleration
-  state.lARz = (long)DeviceState.lARz; // Z-axis angular acceleration
+  state.lARx = DeviceState.lARx; // X-axis angular acceleration
+  state.lARy = DeviceState.lARy; // Y-axis angular acceleration
+  state.lARz = DeviceState.lARz; // Z-axis angular acceleration
 
-  state.lFX = (long)DeviceState.lFX; // X-axis force
-  state.lFY = (long)DeviceState.lFY; // Y-axis force
-  state.lFZ = (long)DeviceState.lFZ; // Z-axis force
+  state.lFX = DeviceState.lFX; // X-axis force
+  state.lFY = DeviceState.lFY; // Y-axis force
+  state.lFZ = DeviceState.lFZ; // Z-axis force
   // rglFSlider
-  state.lFU = (long)DeviceState.rglFSlider[0]; // U-axis force
-  state.lFV = (long)DeviceState.rglFSlider[1]; // V-axis force
+  state.lFU = DeviceState.rglFSlider[0]; // U-axis force
+  state.lFV = DeviceState.rglFSlider[1]; // V-axis force
 
-  state.lFRx = (long)DeviceState.lFRx; // X-axis torque
-  state.lFRy = (long)DeviceState.lFRy; // Y-axis torque
-  state.lFRz = (long)DeviceState.lFRz; // Z-axis torque
+  state.lFRx = DeviceState.lFRx; // X-axis torque
+  state.lFRy = DeviceState.lFRy; // Y-axis torque
+  state.lFRz = DeviceState.lFRz; // Z-axis torque
 
   for (int i = 0; i < 4; i++) { // In banks of 4, shift in the sate of each DPAD 0-16 bits
     switch (DeviceState.rgdwPOV[i]) {
-    case 0:     state.rgdwPOV |= (byte)(1 << ((i + 1) * 0)); break; // dpad0/up, bit = 0     shift into value at stride (i+1) * DPADButton
-    case 18000: state.rgdwPOV |= (byte)(1 << ((i + 1) * 1)); break; // dpad0/down, bit = 1
-    case 27000: state.rgdwPOV |= (byte)(1 << ((i + 1) * 2)); break; // dpad0/left, bit = 2
-    case 9000:  state.rgdwPOV |= (byte)(1 << ((i + 1) * 3)); break; // dpad0/right, bit = 3
+    case 0:     state.rgdwPOV |= (byte)(1 << ((i + 1) * 0)); break; // dpad[i]/up, bit = 0     shift into value at stride (i+1) * DPADButton
+    case 18000: state.rgdwPOV |= (byte)(1 << ((i + 1) * 1)); break; // dpad[i]/down, bit = 1
+    case 27000: state.rgdwPOV |= (byte)(1 << ((i + 1) * 2)); break; // dpad[i]/left, bit = 2
+    case 9000:  state.rgdwPOV |= (byte)(1 << ((i + 1) * 3)); break; // dpad[i]/right, bit = 3
     }
   }
 

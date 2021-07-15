@@ -63,6 +63,7 @@ extern "C" { // Everything to be made available by the DLL
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT          CreateDevice(LPCSTR guidInstance);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT          RemoveDevice(LPCSTR guidInstance);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT          GetDeviceState(LPCSTR guidInstance, FlatJoyState2& deviceState);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT          GetDeviceStateRaw(LPCSTR guidInstance, DIJOYSTATE2& deviceState);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT          GetDeviceCapabilities(LPCSTR guidInstance, DIDEVCAPS& DeviceCapabilitiesOut);
 }
 
