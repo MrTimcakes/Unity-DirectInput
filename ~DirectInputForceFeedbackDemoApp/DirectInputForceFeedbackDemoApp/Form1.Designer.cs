@@ -36,6 +36,7 @@ namespace DirectInputForceFeedbackDemoApp
       this.TimerPoll = new System.Windows.Forms.Timer(this.components);
       this.ButtonPoll = new System.Windows.Forms.Button();
       this.ButtonAttatch = new System.Windows.Forms.Button();
+      this.ButtonRemove = new System.Windows.Forms.Button();
       this.SuspendLayout();
       // 
       // ComboBoxDevices
@@ -68,9 +69,9 @@ namespace DirectInputForceFeedbackDemoApp
       // 
       // ButtonPoll
       // 
-      this.ButtonPoll.Location = new System.Drawing.Point(596, 13);
+      this.ButtonPoll.Location = new System.Drawing.Point(596, 53);
       this.ButtonPoll.Name = "ButtonPoll";
-      this.ButtonPoll.Size = new System.Drawing.Size(76, 34);
+      this.ButtonPoll.Size = new System.Drawing.Size(84, 34);
       this.ButtonPoll.TabIndex = 4;
       this.ButtonPoll.Text = "Poll";
       this.ButtonPoll.UseVisualStyleBackColor = true;
@@ -86,9 +87,20 @@ namespace DirectInputForceFeedbackDemoApp
       this.ButtonAttatch.UseVisualStyleBackColor = true;
       this.ButtonAttatch.Click += new System.EventHandler(this.ButtonAttatch_Click);
       // 
+      // ButtonRemove
+      // 
+      this.ButtonRemove.Location = new System.Drawing.Point(596, 13);
+      this.ButtonRemove.Name = "ButtonRemove";
+      this.ButtonRemove.Size = new System.Drawing.Size(84, 34);
+      this.ButtonRemove.TabIndex = 6;
+      this.ButtonRemove.Text = "Remove";
+      this.ButtonRemove.UseVisualStyleBackColor = true;
+      this.ButtonRemove.Click += new System.EventHandler(this.ButtonRemove_Click);
+      // 
       // Form1
       // 
       this.ClientSize = new System.Drawing.Size(698, 441);
+      this.Controls.Add(this.ButtonRemove);
       this.Controls.Add(this.ButtonAttatch);
       this.Controls.Add(this.ButtonPoll);
       this.Controls.Add(this.label1);
@@ -109,6 +121,7 @@ namespace DirectInputForceFeedbackDemoApp
     private System.Windows.Forms.Timer TimerPoll;
     private System.Windows.Forms.Button ButtonPoll;
     private System.Windows.Forms.Button ButtonAttatch;
+    private System.Windows.Forms.Button ButtonRemove;
   }
 }
 

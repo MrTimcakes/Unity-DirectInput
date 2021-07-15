@@ -7,9 +7,11 @@ namespace DirectInputManager {
     [DllImport(DLLFile)] public static extern int StartDirectInput();
     [DllImport(DLLFile)] public static extern IntPtr EnumerateDevices(out int deviceCount);
     [DllImport(DLLFile)] public static extern int CreateDevice(string guidInstance);
+    [DllImport(DLLFile)] public static extern int DestroyDevice(string guidInstance);
     [DllImport(DLLFile)] public static extern int GetDeviceState(string guidInstance, out FlatJoyState2 DeviceState);
     [DllImport(DLLFile)] public static extern int GetDeviceStateRaw(string guidInstance, out DIJOYSTATE2 DeviceState);
     [DllImport(DLLFile)] public static extern int GetDeviceCapabilities(string guidInstance, out DIDEVCAPS DeviceCapabilitiesOut);
+    [DllImport(DLLFile)] public static extern int GetActiveDevices([MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] ActiveGUIDs);
   }
   class DIManager {
     //////////////////////////////////////////////////////////////
@@ -66,6 +68,15 @@ namespace DirectInputManager {
       return true;
     }
 
+    // Remove a specified Device, Stops all ForceFeedback & GetState capabilities
+    // E.g. DIManager.Destroy( DIManager.devices[0] );
+    public static bool Destroy(DeviceInfo device) {
+      int hresult = Native.DestroyDevice(device.guidInstance);
+      //if (hresult != 0) { Debug.LogError($"[DirectInputManager] CreateDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] CreateDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
+
     // Retrieve state of the Device, Flattened for easier comparrison. (JoyState2)
     public static FlatJoyState2 GetDeviceState(DeviceInfo device) {
       FlatJoyState2 DeviceState = new();
@@ -82,6 +93,17 @@ namespace DirectInputManager {
       //if (hresult != 0) { Debug.LogError($"[DirectInputManager] GetDeviceState Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
       if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] GetDeviceState Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
       return DeviceState;
+    }
+
+    public static void GetActiveDevices() {
+      string[] ActiveGUIDs = null;
+      int hresult = Native.GetActiveDevices(out ActiveGUIDs);
+      //if (hresult != 0) { Debug.LogError($"[DirectInputManager] GetActiveDevices Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] GetActiveDevices Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+
+      foreach (var GUID in ActiveGUIDs) {
+        System.Diagnostics.Debug.WriteLine(GUID);
+      }
     }
 
   }
