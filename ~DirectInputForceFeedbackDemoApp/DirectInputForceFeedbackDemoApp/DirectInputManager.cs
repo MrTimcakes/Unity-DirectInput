@@ -9,9 +9,10 @@ namespace DirectInputManager {
   class Native {
     const string DLLFile = @"..\..\..\..\..\~DirectInputForceFeedback\x64\Release\DirectInputForceFeedback.dll";
     [DllImport(DLLFile)] public static extern int StartDirectInput();
-    [DllImport(DLLFile)] public static extern IntPtr EnumerateDevices(ref int deviceCount);
+    [DllImport(DLLFile)] public static extern IntPtr EnumerateDevices(out int deviceCount);
     [DllImport(DLLFile)] public static extern int CreateDevice(string guidInstance);
     [DllImport(DLLFile)] public static extern int GetDeviceState(string guidInstance, out FlatJoyState2 DeviceState);
+    [DllImport(DLLFile)] public static extern int GetDeviceStateRaw(string guidInstance, out DIJOYSTATE2 DeviceState);
     [DllImport(DLLFile)] public static extern int GetDeviceCapabilities(string guidInstance, out DIDEVCAPS DeviceCapabilitiesOut);
   }
   class DIManager {
@@ -43,62 +44,55 @@ namespace DirectInputManager {
       return _isInitialized = true;
     }
 
+    // Fill _devices with DeviceInfo
     public static void EnumerateDevices() {
       int deviceCount = 0;
-      IntPtr ptrDevices = Native.EnumerateDevices(ref deviceCount);
+      IntPtr ptrDevices = Native.EnumerateDevices(out deviceCount); // Returns pointer to list of devices and how many are available
 
       if (deviceCount > 0) {
         _devices = new DeviceInfo[deviceCount];
 
-        int deviceSize = Marshal.SizeOf(typeof(DeviceInfo));
+        int deviceSize = Marshal.SizeOf(typeof(DeviceInfo)); // Size of each Device entry
         for (int i = 0; i < deviceCount; i++) {
-          IntPtr pCurrent = ptrDevices + i * deviceSize;
-          _devices[i] = Marshal.PtrToStructure<DeviceInfo>(pCurrent);
+          IntPtr pCurrent = ptrDevices + i * deviceSize; // Ptr to the current device
+          _devices[i] = Marshal.PtrToStructure<DeviceInfo>(pCurrent); // Transform the Ptr into a C# instance of DeviceInfo
         }
       }
       return;
     }
 
+    // Attach to Device, ready to get state/ForceFeedback
+    // E.g. DIManager.Attach( DIManager.devices[0] );
     public static bool Attach(DeviceInfo device) {
       int hresult = Native.CreateDevice(device.guidInstance);
       //if (hresult != 0) { Debug.LogError($"[DirectInputManager] CreateDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] CreateDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
-
-      System.Diagnostics.Debug.WriteLine($"Attached to {device.guidInstance}");
-
       return true;
     }
 
-     //This is how I want it, but it causes a NullReferenceExeption for some reason
-    public static FlatJoyState2 Poll(DeviceInfo device) {
+    // Retrieve state of the Device, Flattened for easier comparrison. (JoyState2)
+    public static FlatJoyState2 GetDeviceState(DeviceInfo device) {
       FlatJoyState2 DeviceState = new();
       int hresult = Native.GetDeviceState(device.guidInstance, out DeviceState);
       //if (hresult != 0) { Debug.LogError($"[DirectInputManager] GetDeviceState Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
       if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] GetDeviceState Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
-      System.Diagnostics.Debug.WriteLine(DeviceState.lX);
       return DeviceState;
     }
 
-    //public static void Poll(DeviceInfo device, ref FlatJoyState2 DeviceState) {
-    //  int hresult = Native.GetDeviceState(device.guidInstance, ref DeviceState);
-    //  //if (hresult != 0) { Debug.LogError($"[DirectInputManager] GetDeviceState Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
-    //  if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] GetDeviceState Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
-    //  System.Diagnostics.Debug.WriteLine(DeviceState.lX);
-    //}
+    // Retrieve the state of the device, not flattened raw DIJOYSTATE2. 
+    public static DIJOYSTATE2 GetDeviceStateRaw(DeviceInfo device) {
+      DIJOYSTATE2 DeviceState = new();
+      int hresult = Native.GetDeviceStateRaw(device.guidInstance, out DeviceState);
+      //if (hresult != 0) { Debug.LogError($"[DirectInputManager] GetDeviceState Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] GetDeviceState Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+      return DeviceState;
+    }
 
-    //public static void DEV(string guidInstance) {
-    //  int lX = -1;
-    //  int hresult = Native.DEVFUNC(guidInstance, ref lX);
-    //  if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] DEVFUNC Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
-    //  System.Diagnostics.Debug.WriteLine( Convert.ToString( lX ) );
-    //}
   }
 
   /// <summary>
   /// Helper class to print out user friendly system error codes.
-  /// 
   /// Taken from: https://stackoverflow.com/a/21174331/9053848
-  /// 
   /// </summary>
   public static class WinErrors {
     #region definitions
