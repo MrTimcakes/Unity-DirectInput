@@ -58,13 +58,15 @@ extern "C" { // Everything to be made available by the DLL
 
   struct DIDEVCAPS;
 
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT          StartDirectInput();
-	DIRECTINPUTFORCEFEEDBACK_API DeviceInfo*      EnumerateDevices(int& deviceCount);
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT          CreateDevice(LPCSTR guidInstance);
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT          RemoveDevice(LPCSTR guidInstance);
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT          GetDeviceState(LPCSTR guidInstance, FlatJoyState2& deviceState);
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT          GetDeviceStateRaw(LPCSTR guidInstance, DIJOYSTATE2& deviceState);
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT          GetDeviceCapabilities(LPCSTR guidInstance, DIDEVCAPS& DeviceCapabilitiesOut);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT              StartDirectInput();
+	DIRECTINPUTFORCEFEEDBACK_API DeviceInfo*          EnumerateDevices(int& deviceCount);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT              CreateDevice(LPCSTR guidInstance);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT              DestroyDevice(LPCSTR guidInstance);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceState(LPCSTR guidInstance, /*[out]*/ FlatJoyState2& deviceState);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceStateRaw(LPCSTR guidInstance, /*[out]*/ DIJOYSTATE2& deviceState);
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceCapabilities(LPCSTR guidInstance, /*[out]*/ DIDEVCAPS& deviceCapabilitiesOut);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT __stdcall    GetActiveDevices( /*[out]*/ SAFEARRAY** activeGUIDs);
+
 }
 
 
@@ -89,3 +91,6 @@ BOOL IsMainWindow(HWND handle);
 GUID LPCSTRGUIDtoGUID(LPCSTR guidInstance);
 FlatJoyState2 FlattenDIJOYSTATE2(DIJOYSTATE2 DeviceState);
 bool GUIDMatch(LPCSTR guidInstance, LPDIRECTINPUTDEVICE8 Device);
+GUID Device2GUID(LPDIRECTINPUTDEVICE8 Device);
+inline CComBSTR ToBstr(const std::wstring& s);
+void DestroyDeviceIfExists(LPCSTR guidInstance);

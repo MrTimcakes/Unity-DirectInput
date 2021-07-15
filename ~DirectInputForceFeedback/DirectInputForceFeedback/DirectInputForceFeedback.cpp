@@ -72,8 +72,9 @@ BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* pInst, void* pContext
 // Create the DirectInput Device and Acquire ready for State retreval & FFB Effects (Requires Cooperation level Exclusive)
 // Pass the GUID (as a string) of the Device you'd like to attach to, GUID obtained from the Enumerated Devices 
 HRESULT CreateDevice(LPCSTR guidInstance) {
-  // If device with GUID already exists, destroy ir
-  //if (g_pDevice) { FreeFFBDevice(); }
+  DestroyDeviceIfExists(guidInstance); // If device exists, clear it first
+
+
   LPDIRECTINPUTDEVICE8 DIDevice;
 
   HRESULT hr;
@@ -89,11 +90,12 @@ HRESULT CreateDevice(LPCSTR guidInstance) {
 }
 
 // Remove the DirectInput Device, Unacquire and remove from ActiveDevices
-HRESULT RemoveDevice(LPCSTR guidInstance) {
+HRESULT DestroyDevice(LPCSTR guidInstance) {
   HRESULT hr = E_FAIL;
   int idx = 0;
   for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
     if (GUIDMatch(guidInstance, Device)) {
+      // TODO: Stop Effects?
       if (SUCCEEDED(hr = Device->Unacquire())) { // DirectInput Unacquire
         //ActiveDevices.erase(ActiveDevices.begin() + idx); // Remove the device from our ActiveDevices vector     // Performance issues as vector grows? Swap to last element then remove?
         if (idx != ActiveDevices.size() - 1) { ActiveDevices[idx] = std::move(ActiveDevices.back()); } // Swap to back (Avoiding self assignment)
@@ -106,7 +108,7 @@ HRESULT RemoveDevice(LPCSTR guidInstance) {
 }
 
 // Fetch the Device State, give GUID of the Device (Must already be created by CreateDevice) and out FlatJoyState2
-HRESULT GetDeviceState(LPCSTR guidInstance, FlatJoyState2& deviceState) {
+HRESULT GetDeviceState(LPCSTR guidInstance, /*[out]*/ FlatJoyState2& deviceState) {
   HRESULT hr = E_FAIL;
 
   for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
@@ -120,7 +122,7 @@ HRESULT GetDeviceState(LPCSTR guidInstance, FlatJoyState2& deviceState) {
 }
 
 // Fetch the Device State, give GUID of the Device (Must already be created by CreateDevice) and out DIJOYSTATE2
-HRESULT GetDeviceStateRaw(LPCSTR guidInstance, DIJOYSTATE2& deviceState) {
+HRESULT GetDeviceStateRaw(LPCSTR guidInstance, /*[out]*/ DIJOYSTATE2& deviceState) {
   HRESULT hr = E_FAIL;
 
   for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
@@ -132,20 +134,53 @@ HRESULT GetDeviceStateRaw(LPCSTR guidInstance, DIJOYSTATE2& deviceState) {
 }
 
 // Fetch the capabilities of the device, returns DIDEVCAPS see https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416607(v=vs.85)
-HRESULT GetDeviceCapabilities(LPCSTR guidInstance, DIDEVCAPS& DeviceCapabilitiesOut) {
+HRESULT GetDeviceCapabilities(LPCSTR guidInstance, /*[out]*/ DIDEVCAPS& deviceCapabilitiesOut) {
   HRESULT hr = E_FAIL;
 
   for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
     if (GUIDMatch(guidInstance, Device)) {
       DIDEVCAPS DeviceCapabilities;
       DeviceCapabilities.dwSize = sizeof(DIDEVCAPS);
-      Device->GetCapabilities(&DeviceCapabilities);
-      DeviceCapabilitiesOut = DeviceCapabilities;
+      hr = Device->GetCapabilities(&DeviceCapabilities);
+      deviceCapabilitiesOut = DeviceCapabilities;
     }
   }
 
   return hr;
 }
+
+// Generate SAFEARRAY of ActiveDevice GUIDs
+HRESULT __stdcall GetActiveDevices(/*[out]*/ SAFEARRAY** activeGUIDs){
+  HRESULT hr = E_FAIL;
+  try{
+    // Source data
+    std::vector<std::wstring> sourceData;
+    for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
+      wchar_t GUIDwchar[40] = { 0 };
+      StringFromGUID2(Device2GUID(Device), GUIDwchar, 40);
+      sourceData.push_back(GUIDwchar);
+    }
+
+    // Build the destination SAFEARRAY from the source data
+    const LONG count = static_cast<LONG>(sourceData.size());
+    CComSafeArray<BSTR> SAFEARRAY(count);
+    for (LONG i = 0; i < count; i++){
+      CComBSTR bstr = ToBstr(sourceData[i]); // Create a BSTR from the std::wstring
+      // Move the BSTR into the safe array
+      if (FAILED(hr = SAFEARRAY.SetAt(i, bstr.Detach(), FALSE))){ AtlThrow(hr); }
+    }
+
+    // Return the safe array to the caller (transfer ownership)
+    *activeGUIDs = SAFEARRAY.Detach();
+  } catch (const CAtlException& e){
+    hr = e;
+  } catch (const std::exception&){
+    hr = E_FAIL;
+  }
+
+  return hr;
+}
+
 
 //////////////////////////////////////////////////////////////
 // Helper Functions
@@ -199,7 +234,6 @@ GUID LPCSTRGUIDtoGUID(LPCSTR guidInstance) {
 
 FlatJoyState2 FlattenDIJOYSTATE2(DIJOYSTATE2 DeviceState) {
   FlatJoyState2 state = FlatJoyState2(); // Hold the flattend state
-  //state.buttonsA = 0;
 
   // ButtonA
   for (int i = 0; i < 64; i++) { // In banks of 64, shift in the sate of each button BankA 0-63
@@ -256,7 +290,7 @@ FlatJoyState2 FlattenDIJOYSTATE2(DIJOYSTATE2 DeviceState) {
   state.lFRy = DeviceState.lFRy; // Y-axis torque
   state.lFRz = DeviceState.lFRz; // Z-axis torque
 
-  for (int i = 0; i < 4; i++) { // In banks of 4, shift in the sate of each DPAD 0-16 bits
+  for (int i = 0; i < 4; i++) { // In banks of 4, shift in the sate of each DPAD 0-16 bits 
     switch (DeviceState.rgdwPOV[i]) {
     case 0:     state.rgdwPOV |= (byte)(1 << ((i + 1) * 0)); break; // dpad[i]/up, bit = 0     shift into value at stride (i+1) * DPADButton
     case 18000: state.rgdwPOV |= (byte)(1 << ((i + 1) * 1)); break; // dpad[i]/down, bit = 1
@@ -275,4 +309,24 @@ bool GUIDMatch(LPCSTR guidInstance, LPDIRECTINPUTDEVICE8 Device) {
     return true;
   }
   return false;
+}
+
+GUID Device2GUID(LPDIRECTINPUTDEVICE8 Device) {
+  DIDEVICEINSTANCE deviceInfo = { sizeof(DIDEVICEINSTANCE) };
+  if (FAILED(Device->GetDeviceInfo(&deviceInfo))) { /*return false;*/ } // Fetch device info
+  return deviceInfo.guidInstance;
+}
+
+// Helper function to convert a std::wstring to the ATL CComBSTR wrapper (Handy because it can be sized at runtime)
+inline CComBSTR ToBstr(const std::wstring& s) {
+  if (s.empty()) { return CComBSTR(); }// Special case of empty string
+  return CComBSTR(static_cast<int>(s.size()), s.data());
+}
+
+void DestroyDeviceIfExists(LPCSTR guidInstance) {
+  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
+    if (GUIDMatch(guidInstance, Device)) {
+      DestroyDevice(guidInstance);
+    }
+  }
 }
