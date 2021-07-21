@@ -186,18 +186,37 @@ namespace DirectInputManager {
     public UInt16 rgdwPOV;  // Store each DPAD in chunks of 4 bits inside 16-bit UInt   
   }
 
+  [Flags]
+  public enum dwFlags {
+    DIDC_ALIAS = 0x00010000,
+    DIDC_ATTACHED = 0x00000001,
+    DIDC_DEADBAND = 0x00004000,
+    DIDC_EMULATED = 0x00000004,
+    DIDC_FORCEFEEDBACK = 0x00000100,
+    DIDC_FFFADE = 0x00000400,
+    DIDC_FFATTACK = 0x00000200,
+    DIDC_HIDDEN = 0x00040000,
+    DIDC_PHANTOM = 0x00020000,
+    DIDC_POLLEDDATAFORMAT = 0x00000008,
+    DIDC_POLLEDDEVICE = 0x00000002,
+    DIDC_POSNEGCOEFFICIENTS = 0x00001000,
+    DIDC_POSNEGSATURATION = 0x00002000,
+    DIDC_SATURATION = 0x00000800,
+    DIDC_STARTDELAY = 0x00008000,
+  }
+
   [Serializable]
   public struct DIDEVCAPS {
-    UInt32 dwSize;
-    UInt32 dwFlags;
-    UInt32 dwDevType;
-    UInt32 dwAxes;
-    UInt32 dwButtons;
-    UInt32 dwPOVs;
-    UInt32 dwFFSamplePeriod;
-    UInt32 dwFFMinTimeResolution;
-    UInt32 dwFirmwareRevision;
-    UInt32 dwHardwareRevision;
-    UInt32 dwFFDriverVersion;
+    public UInt32 dwSize; // Size of this structure, in bytes.
+    public dwFlags dwFlags; // Flags associated with the device.
+    public UInt32 dwDevType; // Device type specifier. The least-significant byte of the device type description code specifies the device type. The next-significant byte specifies the device subtype. This value can also be combined with DIDEVTYPE_HID, which specifies a Human Interface Device (human interface device).
+    public UInt32 dwAxes; // Number of axes available on the device.
+    public UInt32 dwButtons; // Number of buttons available on the device.
+    public UInt32 dwPOVs; // Number of point-of-view controllers available on the device.
+    public UInt32 dwFFSamplePeriod; // Minimum time between playback of consecutive raw force commands, in microseconds.
+    public UInt32 dwFFMinTimeResolution; // Minimum time, in microseconds, that the device can resolve. The device rounds any times to the nearest supported increment. For example, if the value of dwFFMinTimeResolution is 1000, the device would round any times to the nearest millisecond.
+    public UInt32 dwFirmwareRevision; // Firmware revision of the device.
+    public UInt32 dwHardwareRevision; // Hardware revision of the device.
+    public UInt32 dwFFDriverVersion; // Version number of the device driver.
   }
 }

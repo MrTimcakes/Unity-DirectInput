@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace DirectInputManager {
@@ -18,8 +19,9 @@ namespace DirectInputManager {
     // Private Variables
     //////////////////////////////////////////////////////////////
 
-    private static bool           _isInitialized = false;
-    private static DeviceInfo[]   _devices = new DeviceInfo[0];
+    private static bool _isInitialized = false; // is DIManager ready
+    private static DeviceInfo[] _devices = new DeviceInfo[0]; // Hold data for devices plugged in
+    private static Dictionary<string, DeviceInfo> _activeDevices = new(); // Hold data for devices actively attached
 
     //////////////////////////////////////////////////////////////
     // Public Variables
@@ -62,18 +64,24 @@ namespace DirectInputManager {
     // Attach to Device, ready to get state/ForceFeedback
     // E.g. DIManager.Attach( DIManager.devices[0] );
     public static bool Attach(DeviceInfo device) {
+      if (_activeDevices.ContainsKey(device.guidInstance)) { return true; } // We're already attached to that device
       int hresult = Native.CreateDevice(device.guidInstance);
       //if (hresult != 0) { Debug.LogError($"[DirectInputManager] CreateDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] CreateDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+
+      _activeDevices.Add(device.guidInstance, device); // Add device to our C# active device tracker (Dictionary allows us to easily check if GUID already exists)
       return true;
     }
 
     // Remove a specified Device, Stops all ForceFeedback & GetState capabilities
     // E.g. DIManager.Destroy( DIManager.devices[0] );
     public static bool Destroy(DeviceInfo device) {
+      if (!_activeDevices.ContainsKey(device.guidInstance)) { return false; } // We don't think we're attached to that device
       int hresult = Native.DestroyDevice(device.guidInstance);
       //if (hresult != 0) { Debug.LogError($"[DirectInputManager] CreateDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] CreateDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+
+      _activeDevices.Remove(device.guidInstance); // remove from our C# active device tracker
       return true;
     }
 
@@ -104,6 +112,19 @@ namespace DirectInputManager {
       foreach (var GUID in ActiveGUIDs) {
         System.Diagnostics.Debug.WriteLine(GUID);
       }
+    }
+
+    // Retrieve the state of the device, not flattened raw DIJOYSTATE2. 
+    public static DIDEVCAPS GetDeviceCapabilities(DeviceInfo device) {
+      DIDEVCAPS DeviceCapabilities = new();
+      int hresult = Native.GetDeviceCapabilities(device.guidInstance, out DeviceCapabilities);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] GetDeviceCapabilities Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+
+      return DeviceCapabilities;
+    }
+
+    public static bool FFBCapable(DeviceInfo device) {
+      return GetDeviceCapabilities(device).dwFlags.HasFlag(dwFlags.DIDC_FORCEFEEDBACK);
     }
 
   }
