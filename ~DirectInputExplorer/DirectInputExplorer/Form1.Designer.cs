@@ -1,5 +1,5 @@
 ﻿
-namespace DirectInputForceFeedbackDemoApp
+namespace DirectInputExplorer
 {
   partial class Form1
   {
