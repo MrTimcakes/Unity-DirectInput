@@ -53,7 +53,7 @@ ExportedObj/
 .consulo/
 *.csproj
 *.unityproj
-*.sln
+#*.sln # Keep VS Solutions
 *.suo
 *.tmp
 *.user
