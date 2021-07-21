@@ -1,0 +1,2 @@
+## DirectInput Explorer
+This is a .NET 5.0 Windows Forms Application developed in parallel with the DirectInputForceFeedback library DLL to enable rapid development of the DLL & DIManager library without being forced to reload the development environment, like with Unity. The application also provides a way to quickly test input devices and capabilities with a GUI.
