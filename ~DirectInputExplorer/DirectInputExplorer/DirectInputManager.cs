@@ -16,7 +16,7 @@ namespace DirectInputManager {
   }
   class DIManager {
     //////////////////////////////////////////////////////////////
-    // Private Variables
+    // Private Variables - For Internal use
     //////////////////////////////////////////////////////////////
 
     private static bool _isInitialized = false; // is DIManager ready
@@ -26,14 +26,9 @@ namespace DirectInputManager {
     //////////////////////////////////////////////////////////////
     // Public Variables
     //////////////////////////////////////////////////////////////
-    public static bool isInitialized {
-      get => _isInitialized;
-      //set { Debug.Log("[DirectInputManager]Can't set isInitialized!"); }
-    }
-    public static DeviceInfo[] devices {
-      get => _devices;
-      //set { Debug.Log("[DirectInputManager]Can't set devices!"); }
-    }
+    public static bool isInitialized { get => _isInitialized; }
+    public static DeviceInfo[] devices { get => _devices; }
+    public static Dictionary<string, DeviceInfo> activeDevices { get => _activeDevices; }
 
     //////////////////////////////////////////////////////////////
     // Methods
@@ -85,7 +80,7 @@ namespace DirectInputManager {
       return true;
     }
 
-    // Retrieve state of the Device, Flattened for easier comparrison. (JoyState2)
+    // Retrieve state of the Device, Flattened for easier comparison. (JoyState2)
     public static FlatJoyState2 GetDeviceState(DeviceInfo device) {
       FlatJoyState2 DeviceState = new();
       int hresult = Native.GetDeviceState(device.guidInstance, out DeviceState);
@@ -103,18 +98,18 @@ namespace DirectInputManager {
       return DeviceState;
     }
 
-    public static void GetActiveDevices() {
+    public static string[] GetActiveDevices() {
       string[] ActiveGUIDs = null;
       int hresult = Native.GetActiveDevices(out ActiveGUIDs);
       //if (hresult != 0) { Debug.LogError($"[DirectInputManager] GetActiveDevices Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
       if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] GetActiveDevices Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
 
-      foreach (var GUID in ActiveGUIDs) {
-        System.Diagnostics.Debug.WriteLine(GUID);
-      }
+      if (ActiveGUIDs.Length != _activeDevices.Count) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] Active Device mismatch! DLL:{ActiveGUIDs.Length}, DIManager:{_activeDevices.Count}"); }
+
+      return ActiveGUIDs;
     }
 
-    // Retrieve the state of the device, not flattened raw DIJOYSTATE2. 
+    // Retrieve the capabilities of the device, Device must be attached first, returns DIDEVCAPS https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416607(v=vs.85)
     public static DIDEVCAPS GetDeviceCapabilities(DeviceInfo device) {
       DIDEVCAPS DeviceCapabilities = new();
       int hresult = Native.GetDeviceCapabilities(device.guidInstance, out DeviceCapabilities);

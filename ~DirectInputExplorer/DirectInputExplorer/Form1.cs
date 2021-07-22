@@ -25,12 +25,15 @@ namespace DirectInputExplorer {
     }
 
     private void ButtonEnumerateDevices_Click(object sender, EventArgs e) {
-      DIManager.EnumerateDevices();
-      //System.Diagnostics.Debug.WriteLine( Convert.ToString( DIManager.devices.Count() ) );
+      string ExistingGUID = ComboBoxDevices.SelectedIndex != -1 ? DIManager.devices[ComboBoxDevices.SelectedIndex].guidInstance : ""; // GUID if device selected, empty if not
+      DIManager.EnumerateDevices(); // Fetch currently plugged in devices
+
       ComboBoxDevices.Items.Clear();
-      foreach ( var device in DIManager.devices) {
+      foreach ( DeviceInfo device in DIManager.devices) {
         ComboBoxDevices.Items.Add( device.productName );
       }
+
+      if (!String.IsNullOrEmpty(ExistingGUID)) { ComboBoxDevices.SelectedIndex = Array.FindIndex(DIManager.devices, d => d.guidInstance == ExistingGUID); } // Reselect that device
     }
 
     private void ComboBoxDevices_SelectedIndexChanged(object sender, EventArgs e) {
@@ -46,8 +49,7 @@ namespace DirectInputExplorer {
     }
 
     private void ButtonPoll_Click(object sender, EventArgs e) {
-      DIManager.GetActiveDevices();
-      /// Poll Device
+      /// Get State from Device
       FlatJoyState2 DeviceState = DIManager.GetDeviceState(DIManager.devices[ComboBoxDevices.SelectedIndex]);
       LabelDeviceInfo.Text = $"buttonsA: {Convert.ToString((long)DeviceState.buttonsA, 2).PadLeft(64,'0')}\nbuttonsB: {Convert.ToString((long)DeviceState.buttonsB, 2).PadLeft(64, '0')}\nlX: {DeviceState.lX}\nlY: {DeviceState.lY}\nlZ: {DeviceState.lZ}\nlU: {DeviceState.lU}\nlV: {DeviceState.lV}\nlRx: {DeviceState.lRx}\nlRy: {DeviceState.lRy}\nlRz: {DeviceState.lRz}\nlVX: {DeviceState.lVX}\nlVY: {DeviceState.lVY}\nlVZ: {DeviceState.lVZ}\nlVU: {DeviceState.lVU}\nlVV: {DeviceState.lVV}\nlVRx: {DeviceState.lVRx}\nlVRy: {DeviceState.lVRy}\nlVRz: {DeviceState.lVRz}\nlAX: {DeviceState.lAX}\nlAY: {DeviceState.lAY}\nlAZ: {DeviceState.lAZ}\nlAU: {DeviceState.lAU}\nlAV: {DeviceState.lAV}\nlARx: {DeviceState.lARx}\nlARy: {DeviceState.lARy}\nlARz: {DeviceState.lARz}\nlFX: {DeviceState.lFX}\nlFY: {DeviceState.lFY}\nlFZ: {DeviceState.lFZ}\nlFU: {DeviceState.lFU}\nlFV: {DeviceState.lFV}\nlFRx: {DeviceState.lFRx}\nlFRy: {DeviceState.lFRy}\nlFRz: {DeviceState.lFRz}\nrgdwPOV: {Convert.ToString((long)DeviceState.rgdwPOV, 2).PadLeft(16, '0')}\n";
     }
@@ -56,6 +58,15 @@ namespace DirectInputExplorer {
       DIDEVCAPS DeviceCaps = DIManager.GetDeviceCapabilities(DIManager.devices[ComboBoxDevices.SelectedIndex]);
       LabelCapabilities.Text = $"dwSize: {DeviceCaps.dwSize}\ndwFlags: {DeviceCaps.dwFlags}\ndwDevType: {Convert.ToString(DeviceCaps.dwDevType, 2).PadLeft(32, '0')}\ndwAxes: {DeviceCaps.dwAxes}\ndwButtons: {DeviceCaps.dwButtons}\ndwPOVs: {DeviceCaps.dwPOVs}\ndwFFSamplePeriod: {DeviceCaps.dwFFSamplePeriod}\ndwFFMinTimeResolution: {DeviceCaps.dwFFMinTimeResolution}\ndwFirmwareRevision: {DeviceCaps.dwFirmwareRevision}\ndwHardwareRevision: {DeviceCaps.dwHardwareRevision}\ndwFFDriverVersion: {DeviceCaps.dwFFDriverVersion}";
 
+    }
+
+
+    //////////////////////////////////////////////////////////////
+    // Debug Functions
+    //////////////////////////////////////////////////////////////
+    private void ButtonDebug_Click(object sender, EventArgs e) {
+      System.Diagnostics.Debug.WriteLine( DIManager.activeDevices.Count() );
+      System.Diagnostics.Debug.WriteLine( string.Join("\n", DIManager.GetActiveDevices()) );
     }
   }
 }
