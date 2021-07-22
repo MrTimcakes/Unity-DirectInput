@@ -19,8 +19,8 @@ extern "C" { // Everything to be made available by the DLL
 	};
 
   struct FlatJoyState2 {
-    unsigned long long buttonsA; // Buttons seperated into banks of 64-Bits to fit into Unsigned 64-bit integer
-    unsigned long long buttonsB; // Buttons seperated into banks of 64-Bits to fit into Unsigned 64-bit integer
+    long long buttonsA; // Buttons seperated into banks of 64-Bits to fit into 64-bit integer
+    long long buttonsB; // Buttons seperated into banks of 64-Bits to fit into 64-bit integer
     long lX;       // X-axis
     long lY;       // Y-axis
     long lZ;       // Z-axis
@@ -56,8 +56,11 @@ extern "C" { // Everything to be made available by the DLL
     short rgdwPOV; // Store each DPAD in chunks of 4 bits inside 16-bit short     
   };
 
-  struct DIDEVCAPS;
+  struct DIDEVCAPS; // Transfer device capabilities across the interop boundary
 
+  //////////////////////////////////////////////////////////////
+  // DLL Functions
+  //////////////////////////////////////////////////////////////
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              StartDirectInput();
 	DIRECTINPUTFORCEFEEDBACK_API DeviceInfo*          EnumerateDevices(int& deviceCount);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              CreateDevice(LPCSTR guidInstance);
