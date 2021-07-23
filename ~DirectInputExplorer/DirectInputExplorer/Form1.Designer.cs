@@ -43,6 +43,7 @@ namespace DirectInputExplorer
       this.LabelInput = new System.Windows.Forms.Label();
       this.TabFFB = new System.Windows.Forms.TabPage();
       this.GroupSpring = new System.Windows.Forms.GroupBox();
+      this.CBSpring = new System.Windows.Forms.CheckBox();
       this.UDSpringDeadband = new System.Windows.Forms.NumericUpDown();
       this.UDSpringSaturation = new System.Windows.Forms.NumericUpDown();
       this.UDSpringCoefficient = new System.Windows.Forms.NumericUpDown();
@@ -56,18 +57,22 @@ namespace DirectInputExplorer
       this.SliderSpringOffset = new System.Windows.Forms.TrackBar();
       this.LabelSpringOffset = new System.Windows.Forms.Label();
       this.groupBox2 = new System.Windows.Forms.GroupBox();
+      this.CBInertia = new System.Windows.Forms.CheckBox();
       this.UDInertiaMagnitude = new System.Windows.Forms.NumericUpDown();
       this.LabelInertiaMagnitude = new System.Windows.Forms.Label();
       this.SliderInertiaMagnitude = new System.Windows.Forms.TrackBar();
       this.groupBox1 = new System.Windows.Forms.GroupBox();
       this.UDFrictionMagnitude = new System.Windows.Forms.NumericUpDown();
+      this.CBFriction = new System.Windows.Forms.CheckBox();
       this.LabelFrictionMagnitude = new System.Windows.Forms.Label();
       this.SliderFrictionMagnitude = new System.Windows.Forms.TrackBar();
       this.GroupDamper = new System.Windows.Forms.GroupBox();
       this.UDDamperMagnitude = new System.Windows.Forms.NumericUpDown();
       this.LabelDamperMagnitude = new System.Windows.Forms.Label();
+      this.CBDamper = new System.Windows.Forms.CheckBox();
       this.SliderDamperMagnitude = new System.Windows.Forms.TrackBar();
       this.GroupConstantForce = new System.Windows.Forms.GroupBox();
+      this.CBConstantForce = new System.Windows.Forms.CheckBox();
       this.UDConstantForceMagnitude = new System.Windows.Forms.NumericUpDown();
       this.LabelConstantForceMagnitude = new System.Windows.Forms.Label();
       this.SliderConstantForceMagnitude = new System.Windows.Forms.TrackBar();
@@ -230,6 +235,7 @@ namespace DirectInputExplorer
       // 
       // GroupSpring
       // 
+      this.GroupSpring.Controls.Add(this.CBSpring);
       this.GroupSpring.Controls.Add(this.UDSpringDeadband);
       this.GroupSpring.Controls.Add(this.UDSpringSaturation);
       this.GroupSpring.Controls.Add(this.UDSpringCoefficient);
@@ -247,7 +253,16 @@ namespace DirectInputExplorer
       this.GroupSpring.Size = new System.Drawing.Size(1214, 180);
       this.GroupSpring.TabIndex = 0;
       this.GroupSpring.TabStop = false;
-      this.GroupSpring.Text = "Spring Force";
+      this.GroupSpring.Text = "   Spring Force";
+      // 
+      // CBSpring
+      // 
+      this.CBSpring.AutoSize = true;
+      this.CBSpring.Location = new System.Drawing.Point(0, 3);
+      this.CBSpring.Name = "CBSpring";
+      this.CBSpring.Size = new System.Drawing.Size(22, 21);
+      this.CBSpring.TabIndex = 1;
+      this.CBSpring.UseVisualStyleBackColor = true;
       // 
       // UDSpringDeadband
       // 
@@ -367,6 +382,7 @@ namespace DirectInputExplorer
       // 
       // groupBox2
       // 
+      this.groupBox2.Controls.Add(this.CBInertia);
       this.groupBox2.Controls.Add(this.UDInertiaMagnitude);
       this.groupBox2.Controls.Add(this.LabelInertiaMagnitude);
       this.groupBox2.Controls.Add(this.SliderInertiaMagnitude);
@@ -375,7 +391,16 @@ namespace DirectInputExplorer
       this.groupBox2.Size = new System.Drawing.Size(1214, 68);
       this.groupBox2.TabIndex = 0;
       this.groupBox2.TabStop = false;
-      this.groupBox2.Text = "Inertia";
+      this.groupBox2.Text = "   Inertia";
+      // 
+      // CBInertia
+      // 
+      this.CBInertia.AutoSize = true;
+      this.CBInertia.Location = new System.Drawing.Point(0, 3);
+      this.CBInertia.Name = "CBInertia";
+      this.CBInertia.Size = new System.Drawing.Size(22, 21);
+      this.CBInertia.TabIndex = 1;
+      this.CBInertia.UseVisualStyleBackColor = true;
       // 
       // UDInertiaMagnitude
       // 
@@ -409,6 +434,7 @@ namespace DirectInputExplorer
       // groupBox1
       // 
       this.groupBox1.Controls.Add(this.UDFrictionMagnitude);
+      this.groupBox1.Controls.Add(this.CBFriction);
       this.groupBox1.Controls.Add(this.LabelFrictionMagnitude);
       this.groupBox1.Controls.Add(this.SliderFrictionMagnitude);
       this.groupBox1.Location = new System.Drawing.Point(6, 340);
@@ -416,7 +442,7 @@ namespace DirectInputExplorer
       this.groupBox1.Size = new System.Drawing.Size(1214, 68);
       this.groupBox1.TabIndex = 0;
       this.groupBox1.TabStop = false;
-      this.groupBox1.Text = "Friction";
+      this.groupBox1.Text = "   Friction";
       // 
       // UDFrictionMagnitude
       // 
@@ -424,6 +450,15 @@ namespace DirectInputExplorer
       this.UDFrictionMagnitude.Name = "UDFrictionMagnitude";
       this.UDFrictionMagnitude.Size = new System.Drawing.Size(96, 31);
       this.UDFrictionMagnitude.TabIndex = 2;
+      // 
+      // CBFriction
+      // 
+      this.CBFriction.AutoSize = true;
+      this.CBFriction.Location = new System.Drawing.Point(0, 3);
+      this.CBFriction.Name = "CBFriction";
+      this.CBFriction.Size = new System.Drawing.Size(22, 21);
+      this.CBFriction.TabIndex = 1;
+      this.CBFriction.UseVisualStyleBackColor = true;
       // 
       // LabelFrictionMagnitude
       // 
@@ -451,13 +486,14 @@ namespace DirectInputExplorer
       // 
       this.GroupDamper.Controls.Add(this.UDDamperMagnitude);
       this.GroupDamper.Controls.Add(this.LabelDamperMagnitude);
+      this.GroupDamper.Controls.Add(this.CBDamper);
       this.GroupDamper.Controls.Add(this.SliderDamperMagnitude);
       this.GroupDamper.Location = new System.Drawing.Point(6, 266);
       this.GroupDamper.Name = "GroupDamper";
       this.GroupDamper.Size = new System.Drawing.Size(1214, 68);
       this.GroupDamper.TabIndex = 0;
       this.GroupDamper.TabStop = false;
-      this.GroupDamper.Text = "Damper";
+      this.GroupDamper.Text = "   Damper";
       // 
       // UDDamperMagnitude
       // 
@@ -475,6 +511,15 @@ namespace DirectInputExplorer
       this.LabelDamperMagnitude.TabIndex = 3;
       this.LabelDamperMagnitude.Text = "Magnitude:";
       // 
+      // CBDamper
+      // 
+      this.CBDamper.AutoSize = true;
+      this.CBDamper.Location = new System.Drawing.Point(0, 3);
+      this.CBDamper.Name = "CBDamper";
+      this.CBDamper.Size = new System.Drawing.Size(22, 21);
+      this.CBDamper.TabIndex = 1;
+      this.CBDamper.UseVisualStyleBackColor = true;
+      // 
       // SliderDamperMagnitude
       // 
       this.SliderDamperMagnitude.AutoSize = false;
@@ -490,6 +535,7 @@ namespace DirectInputExplorer
       // 
       // GroupConstantForce
       // 
+      this.GroupConstantForce.Controls.Add(this.CBConstantForce);
       this.GroupConstantForce.Controls.Add(this.UDConstantForceMagnitude);
       this.GroupConstantForce.Controls.Add(this.LabelConstantForceMagnitude);
       this.GroupConstantForce.Controls.Add(this.SliderConstantForceMagnitude);
@@ -498,7 +544,16 @@ namespace DirectInputExplorer
       this.GroupConstantForce.Size = new System.Drawing.Size(1214, 68);
       this.GroupConstantForce.TabIndex = 0;
       this.GroupConstantForce.TabStop = false;
-      this.GroupConstantForce.Text = "Constant Force";
+      this.GroupConstantForce.Text = "   Constant Force";
+      // 
+      // CBConstantForce
+      // 
+      this.CBConstantForce.AutoSize = true;
+      this.CBConstantForce.Location = new System.Drawing.Point(0, 3);
+      this.CBConstantForce.Name = "CBConstantForce";
+      this.CBConstantForce.Size = new System.Drawing.Size(22, 21);
+      this.CBConstantForce.TabIndex = 1;
+      this.CBConstantForce.UseVisualStyleBackColor = true;
       // 
       // UDConstantForceMagnitude
       // 
@@ -654,6 +709,11 @@ namespace DirectInputExplorer
     private System.Windows.Forms.NumericUpDown UDDamperMagnitude;
     private System.Windows.Forms.Label LabelDamperMagnitude;
     private System.Windows.Forms.TrackBar SliderDamperMagnitude;
+    private System.Windows.Forms.CheckBox CBConstantForce;
+    private System.Windows.Forms.CheckBox CBSpring;
+    private System.Windows.Forms.CheckBox CBInertia;
+    private System.Windows.Forms.CheckBox CBFriction;
+    private System.Windows.Forms.CheckBox CBDamper;
   }
 }
 
