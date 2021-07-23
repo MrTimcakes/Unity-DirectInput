@@ -121,6 +121,10 @@ namespace DirectInputManager {
     public static bool FFBCapable(DeviceInfo device) {
       return GetDeviceCapabilities(device).dwFlags.HasFlag(dwFlags.DIDC_FORCEFEEDBACK);
     }
+    
+    public static bool isDeviceActive(DeviceInfo device) {
+      return _activeDevices.ContainsKey(device.guidInstance);
+    }
 
   }
 
