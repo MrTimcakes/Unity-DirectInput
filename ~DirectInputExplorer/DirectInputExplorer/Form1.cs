@@ -10,6 +10,10 @@ namespace DirectInputExplorer {
       InitializeComponent();
     }
 
+    //////////////////////////////////////////////////////////////
+    // .NET Events/Actions
+    //////////////////////////////////////////////////////////////
+
     private void Form1_Load(object sender, EventArgs e) {
       DIManager.Initialize();
       ButtonEnumerateDevices.PerformClick();
@@ -17,9 +21,7 @@ namespace DirectInputExplorer {
 
       // Disable tabs until device is attached
       foreach (TabPage tab in TabController.TabPages) {
-        //tab.Enabled = false;
-
-        //tab.Font = new System.Drawing.Font(tab.Font, System.Drawing.FontStyle.Strikeout);
+        tab.Enabled = false;
       }
       (TabController.TabPages[0] as TabPage).Enabled = true;
     }
@@ -29,7 +31,7 @@ namespace DirectInputExplorer {
       DIManager.EnumerateDevices(); // Fetch currently plugged in devices
 
       ComboBoxDevices.Items.Clear();
-      foreach ( DeviceInfo device in DIManager.devices) {
+      foreach(DeviceInfo device in DIManager.devices) {
         ComboBoxDevices.Items.Add( device.productName );
       }
 
@@ -37,29 +39,52 @@ namespace DirectInputExplorer {
     }
 
     private void ComboBoxDevices_SelectedIndexChanged(object sender, EventArgs e) {
-      var SelectedDevice = DIManager.devices[ComboBoxDevices.SelectedIndex];
-      LabelDeviceInfo.Text = $"deviceType: {SelectedDevice.deviceType}\nguidInstance: {SelectedDevice.guidInstance}\nguidProduct: {SelectedDevice.guidProduct}\ninstanceName: {SelectedDevice.instanceName}\nproductName: {SelectedDevice.productName}";
+      UpdateReadoutsWithDeviceData(DIManager.devices[ComboBoxDevices.SelectedIndex]);
     }
+
     private void ButtonAttatch_Click(object sender, EventArgs e) {
       DIManager.Attach( DIManager.devices[ComboBoxDevices.SelectedIndex] ); // Connect to device
+      UpdateReadoutsWithDeviceData(DIManager.devices[ComboBoxDevices.SelectedIndex]);
     }
 
     private void ButtonRemove_Click(object sender, EventArgs e) {
       DIManager.Destroy(DIManager.devices[ComboBoxDevices.SelectedIndex]); // Destroy device
+      UpdateReadoutsWithDeviceData(DIManager.devices[ComboBoxDevices.SelectedIndex]);
     }
 
-    private void ButtonPoll_Click(object sender, EventArgs e) {
-      /// Get State from Device
-      FlatJoyState2 DeviceState = DIManager.GetDeviceState(DIManager.devices[ComboBoxDevices.SelectedIndex]);
-      LabelDeviceInfo.Text = $"buttonsA: {Convert.ToString((long)DeviceState.buttonsA, 2).PadLeft(64,'0')}\nbuttonsB: {Convert.ToString((long)DeviceState.buttonsB, 2).PadLeft(64, '0')}\nlX: {DeviceState.lX}\nlY: {DeviceState.lY}\nlZ: {DeviceState.lZ}\nlU: {DeviceState.lU}\nlV: {DeviceState.lV}\nlRx: {DeviceState.lRx}\nlRy: {DeviceState.lRy}\nlRz: {DeviceState.lRz}\nlVX: {DeviceState.lVX}\nlVY: {DeviceState.lVY}\nlVZ: {DeviceState.lVZ}\nlVU: {DeviceState.lVU}\nlVV: {DeviceState.lVV}\nlVRx: {DeviceState.lVRx}\nlVRy: {DeviceState.lVRy}\nlVRz: {DeviceState.lVRz}\nlAX: {DeviceState.lAX}\nlAY: {DeviceState.lAY}\nlAZ: {DeviceState.lAZ}\nlAU: {DeviceState.lAU}\nlAV: {DeviceState.lAV}\nlARx: {DeviceState.lARx}\nlARy: {DeviceState.lARy}\nlARz: {DeviceState.lARz}\nlFX: {DeviceState.lFX}\nlFY: {DeviceState.lFY}\nlFZ: {DeviceState.lFZ}\nlFU: {DeviceState.lFU}\nlFV: {DeviceState.lFV}\nlFRx: {DeviceState.lFRx}\nlFRy: {DeviceState.lFRy}\nlFRz: {DeviceState.lFRz}\nrgdwPOV: {Convert.ToString((long)DeviceState.rgdwPOV, 2).PadLeft(16, '0')}\n";
+    private void TimerPoll_Tick_1(object sender, EventArgs e) {
+      // If device connected get data
+      if (DIManager.isDeviceActive(DIManager.devices[ComboBoxDevices.SelectedIndex])) { // Currently selected device is attached
+        FlatJoyState2 DeviceState = DIManager.GetDeviceState(DIManager.devices[ComboBoxDevices.SelectedIndex]);
+        LabelInput.Text = $"buttonsA: {Convert.ToString((long)DeviceState.buttonsA, 2).PadLeft(64, '0')}\nbuttonsB: {Convert.ToString((long)DeviceState.buttonsB, 2).PadLeft(64, '0')}\nlX: {DeviceState.lX}\nlY: {DeviceState.lY}\nlZ: {DeviceState.lZ}\nlU: {DeviceState.lU}\nlV: {DeviceState.lV}\nlRx: {DeviceState.lRx}\nlRy: {DeviceState.lRy}\nlRz: {DeviceState.lRz}\nlVX: {DeviceState.lVX}\nlVY: {DeviceState.lVY}\nlVZ: {DeviceState.lVZ}\nlVU: {DeviceState.lVU}\nlVV: {DeviceState.lVV}\nlVRx: {DeviceState.lVRx}\nlVRy: {DeviceState.lVRy}\nlVRz: {DeviceState.lVRz}\nlAX: {DeviceState.lAX}\nlAY: {DeviceState.lAY}\nlAZ: {DeviceState.lAZ}\nlAU: {DeviceState.lAU}\nlAV: {DeviceState.lAV}\nlARx: {DeviceState.lARx}\nlARy: {DeviceState.lARy}\nlARz: {DeviceState.lARz}\nlFX: {DeviceState.lFX}\nlFY: {DeviceState.lFY}\nlFZ: {DeviceState.lFZ}\nlFU: {DeviceState.lFU}\nlFV: {DeviceState.lFV}\nlFRx: {DeviceState.lFRx}\nlFRy: {DeviceState.lFRy}\nlFRz: {DeviceState.lFRz}\nrgdwPOV: {Convert.ToString((long)DeviceState.rgdwPOV, 2).PadLeft(16, '0')}\n";
+      }
     }
 
-    private void ButtonCapabilities_Click(object sender, EventArgs e) {
-      DIDEVCAPS DeviceCaps = DIManager.GetDeviceCapabilities(DIManager.devices[ComboBoxDevices.SelectedIndex]);
-      LabelCapabilities.Text = $"dwSize: {DeviceCaps.dwSize}\ndwFlags: {DeviceCaps.dwFlags}\ndwDevType: {Convert.ToString(DeviceCaps.dwDevType, 2).PadLeft(32, '0')}\ndwAxes: {DeviceCaps.dwAxes}\ndwButtons: {DeviceCaps.dwButtons}\ndwPOVs: {DeviceCaps.dwPOVs}\ndwFFSamplePeriod: {DeviceCaps.dwFFSamplePeriod}\ndwFFMinTimeResolution: {DeviceCaps.dwFFMinTimeResolution}\ndwFirmwareRevision: {DeviceCaps.dwFirmwareRevision}\ndwHardwareRevision: {DeviceCaps.dwHardwareRevision}\ndwFFDriverVersion: {DeviceCaps.dwFFDriverVersion}";
+    //////////////////////////////////////////////////////////////
+    // Utility Functions
+    //////////////////////////////////////////////////////////////
 
+    private void UpdateReadoutsWithDeviceData(DeviceInfo Device) {
+      LabelDeviceInfo.Text = $"deviceType: {Device.deviceType}\nguidInstance: {Device.guidInstance}\nguidProduct: {Device.guidProduct}\ninstanceName: {Device.instanceName}\nproductName: {Device.productName}";
+
+      if (DIManager.isDeviceActive(DIManager.devices[ComboBoxDevices.SelectedIndex])) { // Currently selected device is attached
+        (TabController.TabPages["TabInput"] as TabPage).Enabled = true; // Enable the Input Tab as we're connected
+        DIDEVCAPS DeviceCaps = DIManager.GetDeviceCapabilities(Device);
+        LabelCapabilities.Text = $"dwSize: {DeviceCaps.dwSize}\ndwFlags: {DeviceCaps.dwFlags}\ndwDevType: {Convert.ToString(DeviceCaps.dwDevType, 2).PadLeft(32, '0')}\ndwAxes: {DeviceCaps.dwAxes}\ndwButtons: {DeviceCaps.dwButtons}\ndwPOVs: {DeviceCaps.dwPOVs}\ndwFFSamplePeriod: {DeviceCaps.dwFFSamplePeriod}\ndwFFMinTimeResolution: {DeviceCaps.dwFFMinTimeResolution}\ndwFirmwareRevision: {DeviceCaps.dwFirmwareRevision}\ndwHardwareRevision: {DeviceCaps.dwHardwareRevision}\ndwFFDriverVersion: {DeviceCaps.dwFFDriverVersion}";
+
+        if (DIManager.FFBCapable(Device)) { // Device FFB Capable, enable the Tab
+          (TabController.TabPages["TabFFB"] as TabPage).Enabled = true;
+        } else {
+          (TabController.TabPages["TabFFB"] as TabPage).Enabled = false;
+        }
+
+      } else { // Device isn't attached, default readouts
+        LabelInput.Text = "Input: Attatch First";
+        LabelCapabilities.Text = "Capabilities: Attatch First";
+        (TabController.TabPages["TabInput"] as TabPage).Enabled = false;
+        (TabController.TabPages["TabFFB"]   as TabPage).Enabled = false;
+      }
     }
-
 
     //////////////////////////////////////////////////////////////
     // Debug Functions
@@ -67,6 +92,13 @@ namespace DirectInputExplorer {
     private void ButtonDebug_Click(object sender, EventArgs e) {
       System.Diagnostics.Debug.WriteLine( DIManager.activeDevices.Count() );
       System.Diagnostics.Debug.WriteLine( string.Join("\n", DIManager.GetActiveDevices()) );
+
+      FlatJoyState2 DeviceState = DIManager.GetDeviceState(DIManager.devices[ComboBoxDevices.SelectedIndex]);
+      LabelInput.Text = $"buttonsA: {Convert.ToString((long)DeviceState.buttonsA, 2).PadLeft(64, '0')}\nbuttonsB: {Convert.ToString((long)DeviceState.buttonsB, 2).PadLeft(64, '0')}\nlX: {DeviceState.lX}\nlY: {DeviceState.lY}\nlZ: {DeviceState.lZ}\nlU: {DeviceState.lU}\nlV: {DeviceState.lV}\nlRx: {DeviceState.lRx}\nlRy: {DeviceState.lRy}\nlRz: {DeviceState.lRz}\nlVX: {DeviceState.lVX}\nlVY: {DeviceState.lVY}\nlVZ: {DeviceState.lVZ}\nlVU: {DeviceState.lVU}\nlVV: {DeviceState.lVV}\nlVRx: {DeviceState.lVRx}\nlVRy: {DeviceState.lVRy}\nlVRz: {DeviceState.lVRz}\nlAX: {DeviceState.lAX}\nlAY: {DeviceState.lAY}\nlAZ: {DeviceState.lAZ}\nlAU: {DeviceState.lAU}\nlAV: {DeviceState.lAV}\nlARx: {DeviceState.lARx}\nlARy: {DeviceState.lARy}\nlARz: {DeviceState.lARz}\nlFX: {DeviceState.lFX}\nlFY: {DeviceState.lFY}\nlFZ: {DeviceState.lFZ}\nlFU: {DeviceState.lFU}\nlFV: {DeviceState.lFV}\nlFRx: {DeviceState.lFRx}\nlFRy: {DeviceState.lFRy}\nlFRz: {DeviceState.lFRz}\nrgdwPOV: {Convert.ToString((long)DeviceState.rgdwPOV, 2).PadLeft(16, '0')}\n";
+    }
+
+    private void SliderConstantForce_Scroll(object sender, EventArgs e) {
+
     }
   }
 }
