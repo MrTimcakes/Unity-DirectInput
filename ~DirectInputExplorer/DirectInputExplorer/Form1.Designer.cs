@@ -266,6 +266,7 @@ namespace DirectInputExplorer
       // 
       // UDSpringDeadband
       // 
+      this.UDSpringDeadband.Enabled = false;
       this.UDSpringDeadband.Location = new System.Drawing.Point(1112, 141);
       this.UDSpringDeadband.Name = "UDSpringDeadband";
       this.UDSpringDeadband.Size = new System.Drawing.Size(96, 31);
@@ -273,6 +274,7 @@ namespace DirectInputExplorer
       // 
       // UDSpringSaturation
       // 
+      this.UDSpringSaturation.Enabled = false;
       this.UDSpringSaturation.Location = new System.Drawing.Point(1112, 104);
       this.UDSpringSaturation.Name = "UDSpringSaturation";
       this.UDSpringSaturation.Size = new System.Drawing.Size(96, 31);
@@ -280,6 +282,7 @@ namespace DirectInputExplorer
       // 
       // UDSpringCoefficient
       // 
+      this.UDSpringCoefficient.Enabled = false;
       this.UDSpringCoefficient.Location = new System.Drawing.Point(1112, 67);
       this.UDSpringCoefficient.Name = "UDSpringCoefficient";
       this.UDSpringCoefficient.Size = new System.Drawing.Size(96, 31);
@@ -287,6 +290,7 @@ namespace DirectInputExplorer
       // 
       // UDSpringOffset
       // 
+      this.UDSpringOffset.Enabled = false;
       this.UDSpringOffset.Location = new System.Drawing.Point(1112, 30);
       this.UDSpringOffset.Name = "UDSpringOffset";
       this.UDSpringOffset.Size = new System.Drawing.Size(96, 31);
@@ -296,6 +300,7 @@ namespace DirectInputExplorer
       // 
       this.SliderSpringDeadband.AutoSize = false;
       this.SliderSpringDeadband.BackColor = System.Drawing.SystemColors.Control;
+      this.SliderSpringDeadband.Enabled = false;
       this.SliderSpringDeadband.Location = new System.Drawing.Point(108, 141);
       this.SliderSpringDeadband.Maximum = 10000;
       this.SliderSpringDeadband.Minimum = -10000;
@@ -318,6 +323,7 @@ namespace DirectInputExplorer
       // 
       this.SliderSpringSaturation.AutoSize = false;
       this.SliderSpringSaturation.BackColor = System.Drawing.SystemColors.Control;
+      this.SliderSpringSaturation.Enabled = false;
       this.SliderSpringSaturation.Location = new System.Drawing.Point(108, 104);
       this.SliderSpringSaturation.Maximum = 10000;
       this.SliderSpringSaturation.Minimum = -10000;
@@ -340,6 +346,7 @@ namespace DirectInputExplorer
       // 
       this.SliderSpringCoefficient.AutoSize = false;
       this.SliderSpringCoefficient.BackColor = System.Drawing.SystemColors.Control;
+      this.SliderSpringCoefficient.Enabled = false;
       this.SliderSpringCoefficient.Location = new System.Drawing.Point(108, 67);
       this.SliderSpringCoefficient.Maximum = 10000;
       this.SliderSpringCoefficient.Minimum = -10000;
@@ -362,6 +369,7 @@ namespace DirectInputExplorer
       // 
       this.SliderSpringOffset.AutoSize = false;
       this.SliderSpringOffset.BackColor = System.Drawing.SystemColors.Control;
+      this.SliderSpringOffset.Enabled = false;
       this.SliderSpringOffset.Location = new System.Drawing.Point(108, 30);
       this.SliderSpringOffset.Maximum = 10000;
       this.SliderSpringOffset.Minimum = -10000;
@@ -404,6 +412,7 @@ namespace DirectInputExplorer
       // 
       // UDInertiaMagnitude
       // 
+      this.UDInertiaMagnitude.Enabled = false;
       this.UDInertiaMagnitude.Location = new System.Drawing.Point(1112, 30);
       this.UDInertiaMagnitude.Name = "UDInertiaMagnitude";
       this.UDInertiaMagnitude.Size = new System.Drawing.Size(96, 31);
@@ -422,6 +431,7 @@ namespace DirectInputExplorer
       // 
       this.SliderInertiaMagnitude.AutoSize = false;
       this.SliderInertiaMagnitude.BackColor = System.Drawing.SystemColors.Control;
+      this.SliderInertiaMagnitude.Enabled = false;
       this.SliderInertiaMagnitude.Location = new System.Drawing.Point(108, 30);
       this.SliderInertiaMagnitude.Maximum = 10000;
       this.SliderInertiaMagnitude.Minimum = -10000;
@@ -446,6 +456,7 @@ namespace DirectInputExplorer
       // 
       // UDFrictionMagnitude
       // 
+      this.UDFrictionMagnitude.Enabled = false;
       this.UDFrictionMagnitude.Location = new System.Drawing.Point(1112, 30);
       this.UDFrictionMagnitude.Name = "UDFrictionMagnitude";
       this.UDFrictionMagnitude.Size = new System.Drawing.Size(96, 31);
@@ -473,6 +484,7 @@ namespace DirectInputExplorer
       // 
       this.SliderFrictionMagnitude.AutoSize = false;
       this.SliderFrictionMagnitude.BackColor = System.Drawing.SystemColors.Control;
+      this.SliderFrictionMagnitude.Enabled = false;
       this.SliderFrictionMagnitude.Location = new System.Drawing.Point(108, 30);
       this.SliderFrictionMagnitude.Maximum = 10000;
       this.SliderFrictionMagnitude.Minimum = -10000;
@@ -497,6 +509,7 @@ namespace DirectInputExplorer
       // 
       // UDDamperMagnitude
       // 
+      this.UDDamperMagnitude.Enabled = false;
       this.UDDamperMagnitude.Location = new System.Drawing.Point(1112, 30);
       this.UDDamperMagnitude.Name = "UDDamperMagnitude";
       this.UDDamperMagnitude.Size = new System.Drawing.Size(96, 31);
@@ -524,6 +537,7 @@ namespace DirectInputExplorer
       // 
       this.SliderDamperMagnitude.AutoSize = false;
       this.SliderDamperMagnitude.BackColor = System.Drawing.SystemColors.Control;
+      this.SliderDamperMagnitude.Enabled = false;
       this.SliderDamperMagnitude.Location = new System.Drawing.Point(108, 30);
       this.SliderDamperMagnitude.Maximum = 10000;
       this.SliderDamperMagnitude.Minimum = -10000;
@@ -557,6 +571,7 @@ namespace DirectInputExplorer
       // 
       // UDConstantForceMagnitude
       // 
+      this.UDConstantForceMagnitude.Enabled = false;
       this.UDConstantForceMagnitude.Location = new System.Drawing.Point(1112, 30);
       this.UDConstantForceMagnitude.Name = "UDConstantForceMagnitude";
       this.UDConstantForceMagnitude.Size = new System.Drawing.Size(96, 31);
@@ -575,6 +590,7 @@ namespace DirectInputExplorer
       // 
       this.SliderConstantForceMagnitude.AutoSize = false;
       this.SliderConstantForceMagnitude.BackColor = System.Drawing.SystemColors.Control;
+      this.SliderConstantForceMagnitude.Enabled = false;
       this.SliderConstantForceMagnitude.Location = new System.Drawing.Point(108, 30);
       this.SliderConstantForceMagnitude.Maximum = 10000;
       this.SliderConstantForceMagnitude.Minimum = -10000;
