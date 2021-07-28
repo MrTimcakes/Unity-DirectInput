@@ -42,7 +42,7 @@ namespace DirectInputExplorer
       this.TabInput = new System.Windows.Forms.TabPage();
       this.LabelInput = new System.Windows.Forms.Label();
       this.TabFFB = new System.Windows.Forms.TabPage();
-      this.GroupSpring = new System.Windows.Forms.GroupBox();
+      this.GBSpring = new System.Windows.Forms.GroupBox();
       this.CBSpring = new System.Windows.Forms.CheckBox();
       this.UDSpringDeadband = new System.Windows.Forms.NumericUpDown();
       this.UDSpringSaturation = new System.Windows.Forms.NumericUpDown();
@@ -56,22 +56,22 @@ namespace DirectInputExplorer
       this.LabelSpringCoefficient = new System.Windows.Forms.Label();
       this.SliderSpringOffset = new System.Windows.Forms.TrackBar();
       this.LabelSpringOffset = new System.Windows.Forms.Label();
-      this.groupBox2 = new System.Windows.Forms.GroupBox();
+      this.GBInertia = new System.Windows.Forms.GroupBox();
       this.CBInertia = new System.Windows.Forms.CheckBox();
       this.UDInertiaMagnitude = new System.Windows.Forms.NumericUpDown();
       this.LabelInertiaMagnitude = new System.Windows.Forms.Label();
       this.SliderInertiaMagnitude = new System.Windows.Forms.TrackBar();
-      this.groupBox1 = new System.Windows.Forms.GroupBox();
+      this.GBFriction = new System.Windows.Forms.GroupBox();
       this.UDFrictionMagnitude = new System.Windows.Forms.NumericUpDown();
       this.CBFriction = new System.Windows.Forms.CheckBox();
       this.LabelFrictionMagnitude = new System.Windows.Forms.Label();
       this.SliderFrictionMagnitude = new System.Windows.Forms.TrackBar();
-      this.GroupDamper = new System.Windows.Forms.GroupBox();
+      this.GBDamper = new System.Windows.Forms.GroupBox();
       this.UDDamperMagnitude = new System.Windows.Forms.NumericUpDown();
       this.LabelDamperMagnitude = new System.Windows.Forms.Label();
       this.CBDamper = new System.Windows.Forms.CheckBox();
       this.SliderDamperMagnitude = new System.Windows.Forms.TrackBar();
-      this.GroupConstantForce = new System.Windows.Forms.GroupBox();
+      this.GBConstantForce = new System.Windows.Forms.GroupBox();
       this.CBConstantForce = new System.Windows.Forms.CheckBox();
       this.UDConstantForceMagnitude = new System.Windows.Forms.NumericUpDown();
       this.LabelConstantForceMagnitude = new System.Windows.Forms.Label();
@@ -83,7 +83,7 @@ namespace DirectInputExplorer
       this.TabDeviceInfo.SuspendLayout();
       this.TabInput.SuspendLayout();
       this.TabFFB.SuspendLayout();
-      this.GroupSpring.SuspendLayout();
+      this.GBSpring.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.UDSpringDeadband)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.UDSpringSaturation)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.UDSpringCoefficient)).BeginInit();
@@ -92,16 +92,16 @@ namespace DirectInputExplorer
       ((System.ComponentModel.ISupportInitialize)(this.SliderSpringSaturation)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderSpringCoefficient)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderSpringOffset)).BeginInit();
-      this.groupBox2.SuspendLayout();
+      this.GBInertia.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.UDInertiaMagnitude)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderInertiaMagnitude)).BeginInit();
-      this.groupBox1.SuspendLayout();
+      this.GBFriction.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.UDFrictionMagnitude)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderFrictionMagnitude)).BeginInit();
-      this.GroupDamper.SuspendLayout();
+      this.GBDamper.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.UDDamperMagnitude)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderDamperMagnitude)).BeginInit();
-      this.GroupConstantForce.SuspendLayout();
+      this.GBConstantForce.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.UDConstantForceMagnitude)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderConstantForceMagnitude)).BeginInit();
       this.TabMisc.SuspendLayout();
@@ -220,11 +220,11 @@ namespace DirectInputExplorer
       // 
       // TabFFB
       // 
-      this.TabFFB.Controls.Add(this.GroupSpring);
-      this.TabFFB.Controls.Add(this.groupBox2);
-      this.TabFFB.Controls.Add(this.groupBox1);
-      this.TabFFB.Controls.Add(this.GroupDamper);
-      this.TabFFB.Controls.Add(this.GroupConstantForce);
+      this.TabFFB.Controls.Add(this.GBSpring);
+      this.TabFFB.Controls.Add(this.GBInertia);
+      this.TabFFB.Controls.Add(this.GBFriction);
+      this.TabFFB.Controls.Add(this.GBDamper);
+      this.TabFFB.Controls.Add(this.GBConstantForce);
       this.TabFFB.Location = new System.Drawing.Point(4, 34);
       this.TabFFB.Name = "TabFFB";
       this.TabFFB.Padding = new System.Windows.Forms.Padding(3);
@@ -233,27 +233,29 @@ namespace DirectInputExplorer
       this.TabFFB.Text = "FFB";
       this.TabFFB.UseVisualStyleBackColor = true;
       // 
-      // GroupSpring
+      // GBSpring
       // 
-      this.GroupSpring.Controls.Add(this.CBSpring);
-      this.GroupSpring.Controls.Add(this.UDSpringDeadband);
-      this.GroupSpring.Controls.Add(this.UDSpringSaturation);
-      this.GroupSpring.Controls.Add(this.UDSpringCoefficient);
-      this.GroupSpring.Controls.Add(this.UDSpringOffset);
-      this.GroupSpring.Controls.Add(this.SliderSpringDeadband);
-      this.GroupSpring.Controls.Add(this.LabelSpringDeadband);
-      this.GroupSpring.Controls.Add(this.SliderSpringSaturation);
-      this.GroupSpring.Controls.Add(this.LabelSpringSaturation);
-      this.GroupSpring.Controls.Add(this.SliderSpringCoefficient);
-      this.GroupSpring.Controls.Add(this.LabelSpringCoefficient);
-      this.GroupSpring.Controls.Add(this.SliderSpringOffset);
-      this.GroupSpring.Controls.Add(this.LabelSpringOffset);
-      this.GroupSpring.Location = new System.Drawing.Point(6, 80);
-      this.GroupSpring.Name = "GroupSpring";
-      this.GroupSpring.Size = new System.Drawing.Size(1214, 180);
-      this.GroupSpring.TabIndex = 0;
-      this.GroupSpring.TabStop = false;
-      this.GroupSpring.Text = "   Spring Force";
+      this.GBSpring.Controls.Add(this.CBSpring);
+      this.GBSpring.Controls.Add(this.UDSpringDeadband);
+      this.GBSpring.Controls.Add(this.UDSpringSaturation);
+      this.GBSpring.Controls.Add(this.UDSpringCoefficient);
+      this.GBSpring.Controls.Add(this.UDSpringOffset);
+      this.GBSpring.Controls.Add(this.SliderSpringDeadband);
+      this.GBSpring.Controls.Add(this.LabelSpringDeadband);
+      this.GBSpring.Controls.Add(this.SliderSpringSaturation);
+      this.GBSpring.Controls.Add(this.LabelSpringSaturation);
+      this.GBSpring.Controls.Add(this.SliderSpringCoefficient);
+      this.GBSpring.Controls.Add(this.LabelSpringCoefficient);
+      this.GBSpring.Controls.Add(this.SliderSpringOffset);
+      this.GBSpring.Controls.Add(this.LabelSpringOffset);
+      this.GBSpring.Location = new System.Drawing.Point(6, 80);
+      this.GBSpring.Name = "GBSpring";
+      this.GBSpring.Size = new System.Drawing.Size(1214, 180);
+      this.GBSpring.TabIndex = 0;
+      this.GBSpring.TabStop = false;
+      this.GBSpring.Tag = "Spring";
+      this.GBSpring.Text = "   Spring Force";
+      this.GBSpring.Click += new System.EventHandler(this.FFB_GroupBox_Click);
       // 
       // CBSpring
       // 
@@ -262,53 +264,125 @@ namespace DirectInputExplorer
       this.CBSpring.Name = "CBSpring";
       this.CBSpring.Size = new System.Drawing.Size(22, 21);
       this.CBSpring.TabIndex = 1;
+      this.CBSpring.Tag = "Spring";
       this.CBSpring.UseVisualStyleBackColor = true;
+      this.CBSpring.CheckedChanged += new System.EventHandler(this.FFB_CheckBox_CheckedChanged);
       // 
       // UDSpringDeadband
       // 
       this.UDSpringDeadband.Enabled = false;
+      this.UDSpringDeadband.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
       this.UDSpringDeadband.Location = new System.Drawing.Point(1112, 141);
+      this.UDSpringDeadband.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+      this.UDSpringDeadband.Minimum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            -2147483648});
       this.UDSpringDeadband.Name = "UDSpringDeadband";
       this.UDSpringDeadband.Size = new System.Drawing.Size(96, 31);
       this.UDSpringDeadband.TabIndex = 2;
+      this.UDSpringDeadband.Tag = "SpringDeadband";
+      this.UDSpringDeadband.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
       // 
       // UDSpringSaturation
       // 
       this.UDSpringSaturation.Enabled = false;
+      this.UDSpringSaturation.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
       this.UDSpringSaturation.Location = new System.Drawing.Point(1112, 104);
+      this.UDSpringSaturation.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+      this.UDSpringSaturation.Minimum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            -2147483648});
       this.UDSpringSaturation.Name = "UDSpringSaturation";
       this.UDSpringSaturation.Size = new System.Drawing.Size(96, 31);
       this.UDSpringSaturation.TabIndex = 2;
+      this.UDSpringSaturation.Tag = "SpringSaturation";
+      this.UDSpringSaturation.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
       // 
       // UDSpringCoefficient
       // 
       this.UDSpringCoefficient.Enabled = false;
+      this.UDSpringCoefficient.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
       this.UDSpringCoefficient.Location = new System.Drawing.Point(1112, 67);
+      this.UDSpringCoefficient.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+      this.UDSpringCoefficient.Minimum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            -2147483648});
       this.UDSpringCoefficient.Name = "UDSpringCoefficient";
       this.UDSpringCoefficient.Size = new System.Drawing.Size(96, 31);
       this.UDSpringCoefficient.TabIndex = 2;
+      this.UDSpringCoefficient.Tag = "SpringCoefficient";
+      this.UDSpringCoefficient.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
       // 
       // UDSpringOffset
       // 
       this.UDSpringOffset.Enabled = false;
+      this.UDSpringOffset.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
       this.UDSpringOffset.Location = new System.Drawing.Point(1112, 30);
+      this.UDSpringOffset.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+      this.UDSpringOffset.Minimum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            -2147483648});
       this.UDSpringOffset.Name = "UDSpringOffset";
       this.UDSpringOffset.Size = new System.Drawing.Size(96, 31);
       this.UDSpringOffset.TabIndex = 2;
+      this.UDSpringOffset.Tag = "SpringOffset";
+      this.UDSpringOffset.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
       // 
       // SliderSpringDeadband
       // 
       this.SliderSpringDeadband.AutoSize = false;
       this.SliderSpringDeadband.BackColor = System.Drawing.SystemColors.Control;
       this.SliderSpringDeadband.Enabled = false;
+      this.SliderSpringDeadband.LargeChange = 50;
       this.SliderSpringDeadband.Location = new System.Drawing.Point(108, 141);
       this.SliderSpringDeadband.Maximum = 10000;
       this.SliderSpringDeadband.Minimum = -10000;
       this.SliderSpringDeadband.Name = "SliderSpringDeadband";
       this.SliderSpringDeadband.Size = new System.Drawing.Size(998, 31);
       this.SliderSpringDeadband.TabIndex = 0;
+      this.SliderSpringDeadband.Tag = "SpringDeadband";
       this.SliderSpringDeadband.TickStyle = System.Windows.Forms.TickStyle.None;
-      this.SliderSpringDeadband.Scroll += new System.EventHandler(this.SliderConstantForce_Scroll);
+      this.SliderSpringDeadband.Scroll += new System.EventHandler(this.FFB_Slider_Scroll);
       // 
       // LabelSpringDeadband
       // 
@@ -317,21 +391,25 @@ namespace DirectInputExplorer
       this.LabelSpringDeadband.Name = "LabelSpringDeadband";
       this.LabelSpringDeadband.Size = new System.Drawing.Size(99, 25);
       this.LabelSpringDeadband.TabIndex = 3;
+      this.LabelSpringDeadband.Tag = "SpringDeadband";
       this.LabelSpringDeadband.Text = "Deadband:";
+      this.LabelSpringDeadband.Click += new System.EventHandler(this.FFB_Label_Click);
       // 
       // SliderSpringSaturation
       // 
       this.SliderSpringSaturation.AutoSize = false;
       this.SliderSpringSaturation.BackColor = System.Drawing.SystemColors.Control;
       this.SliderSpringSaturation.Enabled = false;
+      this.SliderSpringSaturation.LargeChange = 50;
       this.SliderSpringSaturation.Location = new System.Drawing.Point(108, 104);
       this.SliderSpringSaturation.Maximum = 10000;
       this.SliderSpringSaturation.Minimum = -10000;
       this.SliderSpringSaturation.Name = "SliderSpringSaturation";
       this.SliderSpringSaturation.Size = new System.Drawing.Size(998, 31);
       this.SliderSpringSaturation.TabIndex = 0;
+      this.SliderSpringSaturation.Tag = "SpringSaturation";
       this.SliderSpringSaturation.TickStyle = System.Windows.Forms.TickStyle.None;
-      this.SliderSpringSaturation.Scroll += new System.EventHandler(this.SliderConstantForce_Scroll);
+      this.SliderSpringSaturation.Scroll += new System.EventHandler(this.FFB_Slider_Scroll);
       // 
       // LabelSpringSaturation
       // 
@@ -340,21 +418,25 @@ namespace DirectInputExplorer
       this.LabelSpringSaturation.Name = "LabelSpringSaturation";
       this.LabelSpringSaturation.Size = new System.Drawing.Size(97, 25);
       this.LabelSpringSaturation.TabIndex = 3;
+      this.LabelSpringSaturation.Tag = "SpringSaturation";
       this.LabelSpringSaturation.Text = "Saturation:";
+      this.LabelSpringSaturation.Click += new System.EventHandler(this.FFB_Label_Click);
       // 
       // SliderSpringCoefficient
       // 
       this.SliderSpringCoefficient.AutoSize = false;
       this.SliderSpringCoefficient.BackColor = System.Drawing.SystemColors.Control;
       this.SliderSpringCoefficient.Enabled = false;
+      this.SliderSpringCoefficient.LargeChange = 50;
       this.SliderSpringCoefficient.Location = new System.Drawing.Point(108, 67);
       this.SliderSpringCoefficient.Maximum = 10000;
       this.SliderSpringCoefficient.Minimum = -10000;
       this.SliderSpringCoefficient.Name = "SliderSpringCoefficient";
       this.SliderSpringCoefficient.Size = new System.Drawing.Size(998, 31);
       this.SliderSpringCoefficient.TabIndex = 0;
+      this.SliderSpringCoefficient.Tag = "SpringCoefficient";
       this.SliderSpringCoefficient.TickStyle = System.Windows.Forms.TickStyle.None;
-      this.SliderSpringCoefficient.Scroll += new System.EventHandler(this.SliderConstantForce_Scroll);
+      this.SliderSpringCoefficient.Scroll += new System.EventHandler(this.FFB_Slider_Scroll);
       // 
       // LabelSpringCoefficient
       // 
@@ -363,21 +445,25 @@ namespace DirectInputExplorer
       this.LabelSpringCoefficient.Name = "LabelSpringCoefficient";
       this.LabelSpringCoefficient.Size = new System.Drawing.Size(100, 25);
       this.LabelSpringCoefficient.TabIndex = 3;
+      this.LabelSpringCoefficient.Tag = "SpringCoefficient";
       this.LabelSpringCoefficient.Text = "Coefficient:";
+      this.LabelSpringCoefficient.Click += new System.EventHandler(this.FFB_Label_Click);
       // 
       // SliderSpringOffset
       // 
       this.SliderSpringOffset.AutoSize = false;
       this.SliderSpringOffset.BackColor = System.Drawing.SystemColors.Control;
       this.SliderSpringOffset.Enabled = false;
+      this.SliderSpringOffset.LargeChange = 50;
       this.SliderSpringOffset.Location = new System.Drawing.Point(108, 30);
       this.SliderSpringOffset.Maximum = 10000;
       this.SliderSpringOffset.Minimum = -10000;
       this.SliderSpringOffset.Name = "SliderSpringOffset";
       this.SliderSpringOffset.Size = new System.Drawing.Size(998, 31);
       this.SliderSpringOffset.TabIndex = 0;
+      this.SliderSpringOffset.Tag = "SpringOffset";
       this.SliderSpringOffset.TickStyle = System.Windows.Forms.TickStyle.None;
-      this.SliderSpringOffset.Scroll += new System.EventHandler(this.SliderConstantForce_Scroll);
+      this.SliderSpringOffset.Scroll += new System.EventHandler(this.FFB_Slider_Scroll);
       // 
       // LabelSpringOffset
       // 
@@ -386,20 +472,24 @@ namespace DirectInputExplorer
       this.LabelSpringOffset.Name = "LabelSpringOffset";
       this.LabelSpringOffset.Size = new System.Drawing.Size(65, 25);
       this.LabelSpringOffset.TabIndex = 3;
+      this.LabelSpringOffset.Tag = "SpringOffset";
       this.LabelSpringOffset.Text = "Offset:";
+      this.LabelSpringOffset.Click += new System.EventHandler(this.FFB_Label_Click);
       // 
-      // groupBox2
+      // GBInertia
       // 
-      this.groupBox2.Controls.Add(this.CBInertia);
-      this.groupBox2.Controls.Add(this.UDInertiaMagnitude);
-      this.groupBox2.Controls.Add(this.LabelInertiaMagnitude);
-      this.groupBox2.Controls.Add(this.SliderInertiaMagnitude);
-      this.groupBox2.Location = new System.Drawing.Point(6, 414);
-      this.groupBox2.Name = "groupBox2";
-      this.groupBox2.Size = new System.Drawing.Size(1214, 68);
-      this.groupBox2.TabIndex = 0;
-      this.groupBox2.TabStop = false;
-      this.groupBox2.Text = "   Inertia";
+      this.GBInertia.Controls.Add(this.CBInertia);
+      this.GBInertia.Controls.Add(this.UDInertiaMagnitude);
+      this.GBInertia.Controls.Add(this.LabelInertiaMagnitude);
+      this.GBInertia.Controls.Add(this.SliderInertiaMagnitude);
+      this.GBInertia.Location = new System.Drawing.Point(6, 414);
+      this.GBInertia.Name = "GBInertia";
+      this.GBInertia.Size = new System.Drawing.Size(1214, 68);
+      this.GBInertia.TabIndex = 0;
+      this.GBInertia.TabStop = false;
+      this.GBInertia.Tag = "Inertia";
+      this.GBInertia.Text = "   Inertia";
+      this.GBInertia.Click += new System.EventHandler(this.FFB_GroupBox_Click);
       // 
       // CBInertia
       // 
@@ -409,14 +499,32 @@ namespace DirectInputExplorer
       this.CBInertia.Size = new System.Drawing.Size(22, 21);
       this.CBInertia.TabIndex = 1;
       this.CBInertia.UseVisualStyleBackColor = true;
+      this.CBInertia.CheckedChanged += new System.EventHandler(this.FFB_CheckBox_CheckedChanged);
       // 
       // UDInertiaMagnitude
       // 
       this.UDInertiaMagnitude.Enabled = false;
+      this.UDInertiaMagnitude.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
       this.UDInertiaMagnitude.Location = new System.Drawing.Point(1112, 30);
+      this.UDInertiaMagnitude.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+      this.UDInertiaMagnitude.Minimum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            -2147483648});
       this.UDInertiaMagnitude.Name = "UDInertiaMagnitude";
       this.UDInertiaMagnitude.Size = new System.Drawing.Size(96, 31);
       this.UDInertiaMagnitude.TabIndex = 2;
+      this.UDInertiaMagnitude.Tag = "InertiaMagnitude";
+      this.UDInertiaMagnitude.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
       // 
       // LabelInertiaMagnitude
       // 
@@ -425,42 +533,65 @@ namespace DirectInputExplorer
       this.LabelInertiaMagnitude.Name = "LabelInertiaMagnitude";
       this.LabelInertiaMagnitude.Size = new System.Drawing.Size(102, 25);
       this.LabelInertiaMagnitude.TabIndex = 3;
+      this.LabelInertiaMagnitude.Tag = "InertiaMagnitude";
       this.LabelInertiaMagnitude.Text = "Magnitude:";
+      this.LabelInertiaMagnitude.Click += new System.EventHandler(this.FFB_Label_Click);
       // 
       // SliderInertiaMagnitude
       // 
       this.SliderInertiaMagnitude.AutoSize = false;
       this.SliderInertiaMagnitude.BackColor = System.Drawing.SystemColors.Control;
       this.SliderInertiaMagnitude.Enabled = false;
+      this.SliderInertiaMagnitude.LargeChange = 50;
       this.SliderInertiaMagnitude.Location = new System.Drawing.Point(108, 30);
       this.SliderInertiaMagnitude.Maximum = 10000;
       this.SliderInertiaMagnitude.Minimum = -10000;
       this.SliderInertiaMagnitude.Name = "SliderInertiaMagnitude";
       this.SliderInertiaMagnitude.Size = new System.Drawing.Size(998, 31);
       this.SliderInertiaMagnitude.TabIndex = 0;
+      this.SliderInertiaMagnitude.Tag = "InertiaMagnitude";
       this.SliderInertiaMagnitude.TickStyle = System.Windows.Forms.TickStyle.None;
-      this.SliderInertiaMagnitude.Scroll += new System.EventHandler(this.SliderConstantForce_Scroll);
+      this.SliderInertiaMagnitude.Scroll += new System.EventHandler(this.FFB_Slider_Scroll);
       // 
-      // groupBox1
+      // GBFriction
       // 
-      this.groupBox1.Controls.Add(this.UDFrictionMagnitude);
-      this.groupBox1.Controls.Add(this.CBFriction);
-      this.groupBox1.Controls.Add(this.LabelFrictionMagnitude);
-      this.groupBox1.Controls.Add(this.SliderFrictionMagnitude);
-      this.groupBox1.Location = new System.Drawing.Point(6, 340);
-      this.groupBox1.Name = "groupBox1";
-      this.groupBox1.Size = new System.Drawing.Size(1214, 68);
-      this.groupBox1.TabIndex = 0;
-      this.groupBox1.TabStop = false;
-      this.groupBox1.Text = "   Friction";
+      this.GBFriction.Controls.Add(this.UDFrictionMagnitude);
+      this.GBFriction.Controls.Add(this.CBFriction);
+      this.GBFriction.Controls.Add(this.LabelFrictionMagnitude);
+      this.GBFriction.Controls.Add(this.SliderFrictionMagnitude);
+      this.GBFriction.Location = new System.Drawing.Point(6, 340);
+      this.GBFriction.Name = "GBFriction";
+      this.GBFriction.Size = new System.Drawing.Size(1214, 68);
+      this.GBFriction.TabIndex = 0;
+      this.GBFriction.TabStop = false;
+      this.GBFriction.Tag = "Friction";
+      this.GBFriction.Text = "   Friction";
+      this.GBFriction.Click += new System.EventHandler(this.FFB_GroupBox_Click);
       // 
       // UDFrictionMagnitude
       // 
       this.UDFrictionMagnitude.Enabled = false;
+      this.UDFrictionMagnitude.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
       this.UDFrictionMagnitude.Location = new System.Drawing.Point(1112, 30);
+      this.UDFrictionMagnitude.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+      this.UDFrictionMagnitude.Minimum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            -2147483648});
       this.UDFrictionMagnitude.Name = "UDFrictionMagnitude";
       this.UDFrictionMagnitude.Size = new System.Drawing.Size(96, 31);
       this.UDFrictionMagnitude.TabIndex = 2;
+      this.UDFrictionMagnitude.Tag = "FrictionMagnitude";
+      this.UDFrictionMagnitude.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
       // 
       // CBFriction
       // 
@@ -470,6 +601,7 @@ namespace DirectInputExplorer
       this.CBFriction.Size = new System.Drawing.Size(22, 21);
       this.CBFriction.TabIndex = 1;
       this.CBFriction.UseVisualStyleBackColor = true;
+      this.CBFriction.CheckedChanged += new System.EventHandler(this.FFB_CheckBox_CheckedChanged);
       // 
       // LabelFrictionMagnitude
       // 
@@ -478,42 +610,65 @@ namespace DirectInputExplorer
       this.LabelFrictionMagnitude.Name = "LabelFrictionMagnitude";
       this.LabelFrictionMagnitude.Size = new System.Drawing.Size(102, 25);
       this.LabelFrictionMagnitude.TabIndex = 3;
+      this.LabelFrictionMagnitude.Tag = "FrictionMagnitude";
       this.LabelFrictionMagnitude.Text = "Magnitude:";
+      this.LabelFrictionMagnitude.Click += new System.EventHandler(this.FFB_Label_Click);
       // 
       // SliderFrictionMagnitude
       // 
       this.SliderFrictionMagnitude.AutoSize = false;
       this.SliderFrictionMagnitude.BackColor = System.Drawing.SystemColors.Control;
       this.SliderFrictionMagnitude.Enabled = false;
+      this.SliderFrictionMagnitude.LargeChange = 50;
       this.SliderFrictionMagnitude.Location = new System.Drawing.Point(108, 30);
       this.SliderFrictionMagnitude.Maximum = 10000;
       this.SliderFrictionMagnitude.Minimum = -10000;
       this.SliderFrictionMagnitude.Name = "SliderFrictionMagnitude";
       this.SliderFrictionMagnitude.Size = new System.Drawing.Size(998, 31);
       this.SliderFrictionMagnitude.TabIndex = 0;
+      this.SliderFrictionMagnitude.Tag = "FrictionMagnitude";
       this.SliderFrictionMagnitude.TickStyle = System.Windows.Forms.TickStyle.None;
-      this.SliderFrictionMagnitude.Scroll += new System.EventHandler(this.SliderConstantForce_Scroll);
+      this.SliderFrictionMagnitude.Scroll += new System.EventHandler(this.FFB_Slider_Scroll);
       // 
-      // GroupDamper
+      // GBDamper
       // 
-      this.GroupDamper.Controls.Add(this.UDDamperMagnitude);
-      this.GroupDamper.Controls.Add(this.LabelDamperMagnitude);
-      this.GroupDamper.Controls.Add(this.CBDamper);
-      this.GroupDamper.Controls.Add(this.SliderDamperMagnitude);
-      this.GroupDamper.Location = new System.Drawing.Point(6, 266);
-      this.GroupDamper.Name = "GroupDamper";
-      this.GroupDamper.Size = new System.Drawing.Size(1214, 68);
-      this.GroupDamper.TabIndex = 0;
-      this.GroupDamper.TabStop = false;
-      this.GroupDamper.Text = "   Damper";
+      this.GBDamper.Controls.Add(this.UDDamperMagnitude);
+      this.GBDamper.Controls.Add(this.LabelDamperMagnitude);
+      this.GBDamper.Controls.Add(this.CBDamper);
+      this.GBDamper.Controls.Add(this.SliderDamperMagnitude);
+      this.GBDamper.Location = new System.Drawing.Point(6, 266);
+      this.GBDamper.Name = "GBDamper";
+      this.GBDamper.Size = new System.Drawing.Size(1214, 68);
+      this.GBDamper.TabIndex = 0;
+      this.GBDamper.TabStop = false;
+      this.GBDamper.Tag = "Damper";
+      this.GBDamper.Text = "   Damper";
+      this.GBDamper.Click += new System.EventHandler(this.FFB_GroupBox_Click);
       // 
       // UDDamperMagnitude
       // 
       this.UDDamperMagnitude.Enabled = false;
+      this.UDDamperMagnitude.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
       this.UDDamperMagnitude.Location = new System.Drawing.Point(1112, 30);
+      this.UDDamperMagnitude.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+      this.UDDamperMagnitude.Minimum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            -2147483648});
       this.UDDamperMagnitude.Name = "UDDamperMagnitude";
       this.UDDamperMagnitude.Size = new System.Drawing.Size(96, 31);
       this.UDDamperMagnitude.TabIndex = 2;
+      this.UDDamperMagnitude.Tag = "DamperMagnitude";
+      this.UDDamperMagnitude.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
       // 
       // LabelDamperMagnitude
       // 
@@ -522,7 +677,9 @@ namespace DirectInputExplorer
       this.LabelDamperMagnitude.Name = "LabelDamperMagnitude";
       this.LabelDamperMagnitude.Size = new System.Drawing.Size(102, 25);
       this.LabelDamperMagnitude.TabIndex = 3;
+      this.LabelDamperMagnitude.Tag = "DamperMagnitude";
       this.LabelDamperMagnitude.Text = "Magnitude:";
+      this.LabelDamperMagnitude.Click += new System.EventHandler(this.FFB_Label_Click);
       // 
       // CBDamper
       // 
@@ -532,33 +689,38 @@ namespace DirectInputExplorer
       this.CBDamper.Size = new System.Drawing.Size(22, 21);
       this.CBDamper.TabIndex = 1;
       this.CBDamper.UseVisualStyleBackColor = true;
+      this.CBDamper.CheckedChanged += new System.EventHandler(this.FFB_CheckBox_CheckedChanged);
       // 
       // SliderDamperMagnitude
       // 
       this.SliderDamperMagnitude.AutoSize = false;
       this.SliderDamperMagnitude.BackColor = System.Drawing.SystemColors.Control;
       this.SliderDamperMagnitude.Enabled = false;
+      this.SliderDamperMagnitude.LargeChange = 50;
       this.SliderDamperMagnitude.Location = new System.Drawing.Point(108, 30);
       this.SliderDamperMagnitude.Maximum = 10000;
       this.SliderDamperMagnitude.Minimum = -10000;
       this.SliderDamperMagnitude.Name = "SliderDamperMagnitude";
       this.SliderDamperMagnitude.Size = new System.Drawing.Size(998, 31);
       this.SliderDamperMagnitude.TabIndex = 0;
+      this.SliderDamperMagnitude.Tag = "DamperMagnitude";
       this.SliderDamperMagnitude.TickStyle = System.Windows.Forms.TickStyle.None;
-      this.SliderDamperMagnitude.Scroll += new System.EventHandler(this.SliderConstantForce_Scroll);
+      this.SliderDamperMagnitude.Scroll += new System.EventHandler(this.FFB_Slider_Scroll);
       // 
-      // GroupConstantForce
+      // GBConstantForce
       // 
-      this.GroupConstantForce.Controls.Add(this.CBConstantForce);
-      this.GroupConstantForce.Controls.Add(this.UDConstantForceMagnitude);
-      this.GroupConstantForce.Controls.Add(this.LabelConstantForceMagnitude);
-      this.GroupConstantForce.Controls.Add(this.SliderConstantForceMagnitude);
-      this.GroupConstantForce.Location = new System.Drawing.Point(6, 6);
-      this.GroupConstantForce.Name = "GroupConstantForce";
-      this.GroupConstantForce.Size = new System.Drawing.Size(1214, 68);
-      this.GroupConstantForce.TabIndex = 0;
-      this.GroupConstantForce.TabStop = false;
-      this.GroupConstantForce.Text = "   Constant Force";
+      this.GBConstantForce.Controls.Add(this.CBConstantForce);
+      this.GBConstantForce.Controls.Add(this.UDConstantForceMagnitude);
+      this.GBConstantForce.Controls.Add(this.LabelConstantForceMagnitude);
+      this.GBConstantForce.Controls.Add(this.SliderConstantForceMagnitude);
+      this.GBConstantForce.Location = new System.Drawing.Point(6, 6);
+      this.GBConstantForce.Name = "GBConstantForce";
+      this.GBConstantForce.Size = new System.Drawing.Size(1214, 68);
+      this.GBConstantForce.TabIndex = 0;
+      this.GBConstantForce.TabStop = false;
+      this.GBConstantForce.Tag = "ConstantForce";
+      this.GBConstantForce.Text = "   Constant Force";
+      this.GBConstantForce.Click += new System.EventHandler(this.FFB_GroupBox_Click);
       // 
       // CBConstantForce
       // 
@@ -568,14 +730,32 @@ namespace DirectInputExplorer
       this.CBConstantForce.Size = new System.Drawing.Size(22, 21);
       this.CBConstantForce.TabIndex = 1;
       this.CBConstantForce.UseVisualStyleBackColor = true;
+      this.CBConstantForce.CheckedChanged += new System.EventHandler(this.FFB_CheckBox_CheckedChanged);
       // 
       // UDConstantForceMagnitude
       // 
       this.UDConstantForceMagnitude.Enabled = false;
+      this.UDConstantForceMagnitude.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
       this.UDConstantForceMagnitude.Location = new System.Drawing.Point(1112, 30);
+      this.UDConstantForceMagnitude.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+      this.UDConstantForceMagnitude.Minimum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            -2147483648});
       this.UDConstantForceMagnitude.Name = "UDConstantForceMagnitude";
       this.UDConstantForceMagnitude.Size = new System.Drawing.Size(96, 31);
       this.UDConstantForceMagnitude.TabIndex = 2;
+      this.UDConstantForceMagnitude.Tag = "ConstantForceMagnitude";
+      this.UDConstantForceMagnitude.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
       // 
       // LabelConstantForceMagnitude
       // 
@@ -584,21 +764,25 @@ namespace DirectInputExplorer
       this.LabelConstantForceMagnitude.Name = "LabelConstantForceMagnitude";
       this.LabelConstantForceMagnitude.Size = new System.Drawing.Size(102, 25);
       this.LabelConstantForceMagnitude.TabIndex = 3;
+      this.LabelConstantForceMagnitude.Tag = "ConstantForceMagnitude";
       this.LabelConstantForceMagnitude.Text = "Magnitude:";
+      this.LabelConstantForceMagnitude.Click += new System.EventHandler(this.FFB_Label_Click);
       // 
       // SliderConstantForceMagnitude
       // 
       this.SliderConstantForceMagnitude.AutoSize = false;
       this.SliderConstantForceMagnitude.BackColor = System.Drawing.SystemColors.Control;
       this.SliderConstantForceMagnitude.Enabled = false;
+      this.SliderConstantForceMagnitude.LargeChange = 50;
       this.SliderConstantForceMagnitude.Location = new System.Drawing.Point(108, 30);
       this.SliderConstantForceMagnitude.Maximum = 10000;
       this.SliderConstantForceMagnitude.Minimum = -10000;
       this.SliderConstantForceMagnitude.Name = "SliderConstantForceMagnitude";
       this.SliderConstantForceMagnitude.Size = new System.Drawing.Size(998, 31);
       this.SliderConstantForceMagnitude.TabIndex = 0;
+      this.SliderConstantForceMagnitude.Tag = "ConstantForceMagnitude";
       this.SliderConstantForceMagnitude.TickStyle = System.Windows.Forms.TickStyle.None;
-      this.SliderConstantForceMagnitude.Scroll += new System.EventHandler(this.SliderConstantForce_Scroll);
+      this.SliderConstantForceMagnitude.Scroll += new System.EventHandler(this.FFB_Slider_Scroll);
       // 
       // TabMisc
       // 
@@ -648,8 +832,8 @@ namespace DirectInputExplorer
       this.TabInput.ResumeLayout(false);
       this.TabInput.PerformLayout();
       this.TabFFB.ResumeLayout(false);
-      this.GroupSpring.ResumeLayout(false);
-      this.GroupSpring.PerformLayout();
+      this.GBSpring.ResumeLayout(false);
+      this.GBSpring.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.UDSpringDeadband)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.UDSpringSaturation)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.UDSpringCoefficient)).EndInit();
@@ -658,20 +842,20 @@ namespace DirectInputExplorer
       ((System.ComponentModel.ISupportInitialize)(this.SliderSpringSaturation)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderSpringCoefficient)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderSpringOffset)).EndInit();
-      this.groupBox2.ResumeLayout(false);
-      this.groupBox2.PerformLayout();
+      this.GBInertia.ResumeLayout(false);
+      this.GBInertia.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.UDInertiaMagnitude)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderInertiaMagnitude)).EndInit();
-      this.groupBox1.ResumeLayout(false);
-      this.groupBox1.PerformLayout();
+      this.GBFriction.ResumeLayout(false);
+      this.GBFriction.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.UDFrictionMagnitude)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderFrictionMagnitude)).EndInit();
-      this.GroupDamper.ResumeLayout(false);
-      this.GroupDamper.PerformLayout();
+      this.GBDamper.ResumeLayout(false);
+      this.GBDamper.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.UDDamperMagnitude)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderDamperMagnitude)).EndInit();
-      this.GroupConstantForce.ResumeLayout(false);
-      this.GroupConstantForce.PerformLayout();
+      this.GBConstantForce.ResumeLayout(false);
+      this.GBConstantForce.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.UDConstantForceMagnitude)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.SliderConstantForceMagnitude)).EndInit();
       this.TabMisc.ResumeLayout(false);
@@ -696,9 +880,9 @@ namespace DirectInputExplorer
     private System.Windows.Forms.TabPage TabMisc;
     private System.Windows.Forms.Label LabelDebug;
     private System.Windows.Forms.Button ButtonDebug;
-    private System.Windows.Forms.GroupBox GroupConstantForce;
+    private System.Windows.Forms.GroupBox GBConstantForce;
     private System.Windows.Forms.TrackBar SliderConstantForceMagnitude;
-    private System.Windows.Forms.GroupBox GroupSpring;
+    private System.Windows.Forms.GroupBox GBSpring;
     private System.Windows.Forms.NumericUpDown UDConstantForceMagnitude;
     private System.Windows.Forms.NumericUpDown UDSpringSaturation;
     private System.Windows.Forms.NumericUpDown UDSpringCoefficient;
@@ -713,15 +897,15 @@ namespace DirectInputExplorer
     private System.Windows.Forms.NumericUpDown UDSpringDeadband;
     private System.Windows.Forms.TrackBar SliderSpringDeadband;
     private System.Windows.Forms.Label LabelSpringDeadband;
-    private System.Windows.Forms.GroupBox groupBox2;
+    private System.Windows.Forms.GroupBox GBInertia;
     private System.Windows.Forms.NumericUpDown UDInertiaMagnitude;
     private System.Windows.Forms.Label LabelInertiaMagnitude;
     private System.Windows.Forms.TrackBar SliderInertiaMagnitude;
-    private System.Windows.Forms.GroupBox groupBox1;
+    private System.Windows.Forms.GroupBox GBFriction;
     private System.Windows.Forms.NumericUpDown UDFrictionMagnitude;
     private System.Windows.Forms.Label LabelFrictionMagnitude;
     private System.Windows.Forms.TrackBar SliderFrictionMagnitude;
-    private System.Windows.Forms.GroupBox GroupDamper;
+    private System.Windows.Forms.GroupBox GBDamper;
     private System.Windows.Forms.NumericUpDown UDDamperMagnitude;
     private System.Windows.Forms.Label LabelDamperMagnitude;
     private System.Windows.Forms.TrackBar SliderDamperMagnitude;

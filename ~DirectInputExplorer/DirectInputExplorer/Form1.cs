@@ -61,6 +61,48 @@ namespace DirectInputExplorer {
     }
 
     //////////////////////////////////////////////////////////////
+    // FFB Tab Functions
+    //////////////////////////////////////////////////////////////
+
+    private void FFB_CheckBox_CheckedChanged(object sender, EventArgs e) {
+      CheckBox TriggeringCheckBox = (CheckBox)sender;
+      foreach (Control element in TriggeringCheckBox.Parent.Controls) { // For each of the children in the parent GroupBox
+        if (element is CheckBox) continue; // Don't disable yourself
+        element.Enabled = TriggeringCheckBox.Checked;
+      }
+    }
+
+    private void FFB_GroupBox_Click(object sender, EventArgs e) {
+      CheckBox CB = ((GroupBox)sender).Controls.Find("CB" + ((GroupBox)sender).Tag, false).FirstOrDefault() as CheckBox;
+      CB.Checked = !CB.Checked;
+      FFB_CheckBox_CheckedChanged(CB, e);
+    }
+
+    private void FFB_Label_Click(object sender, EventArgs e) {
+      Label TrigElement = (Label)sender;
+      TrackBar TB = TrigElement.Parent.Controls.Find("Slider" + TrigElement.Tag, false).FirstOrDefault() as TrackBar;
+      NumericUpDown UD = TrigElement.Parent.Controls.Find("UD" + TrigElement.Tag, false).FirstOrDefault() as NumericUpDown;
+
+      TB.Value = 0;
+      UD.Value = 0;
+    }
+
+    private void FFB_Slider_Scroll(object sender, EventArgs e) {
+      TrackBar TrigElement = (TrackBar)sender;
+      // Update UpDown
+      NumericUpDown UD = TrigElement.Parent.Controls.Find("UD" + TrigElement.Tag, false).FirstOrDefault() as NumericUpDown;
+      UD.Value = TrigElement.Value;
+      // FFB Effect has changed
+    }
+
+    private void FFB_UpDown_ValueChanged(object sender, EventArgs e) {
+      NumericUpDown TrigElement = (NumericUpDown)sender;
+      // Update slider(TrackBar)
+      TrackBar TB = TrigElement.Parent.Controls.Find("Slider" + TrigElement.Tag, false).FirstOrDefault() as TrackBar;
+      TB.Value = (int)TrigElement.Value;
+    }
+
+    //////////////////////////////////////////////////////////////
     // Utility Functions
     //////////////////////////////////////////////////////////////
 
@@ -72,11 +114,7 @@ namespace DirectInputExplorer {
         DIDEVCAPS DeviceCaps = DIManager.GetDeviceCapabilities(Device);
         LabelCapabilities.Text = $"dwSize: {DeviceCaps.dwSize}\ndwFlags: {DeviceCaps.dwFlags}\ndwDevType: {Convert.ToString(DeviceCaps.dwDevType, 2).PadLeft(32, '0')}\ndwAxes: {DeviceCaps.dwAxes}\ndwButtons: {DeviceCaps.dwButtons}\ndwPOVs: {DeviceCaps.dwPOVs}\ndwFFSamplePeriod: {DeviceCaps.dwFFSamplePeriod}\ndwFFMinTimeResolution: {DeviceCaps.dwFFMinTimeResolution}\ndwFirmwareRevision: {DeviceCaps.dwFirmwareRevision}\ndwHardwareRevision: {DeviceCaps.dwHardwareRevision}\ndwFFDriverVersion: {DeviceCaps.dwFFDriverVersion}";
 
-        if (DIManager.FFBCapable(Device)) { // Device FFB Capable, enable the Tab
-          (TabController.TabPages["TabFFB"] as TabPage).Enabled = true;
-        } else {
-          (TabController.TabPages["TabFFB"] as TabPage).Enabled = false;
-        }
+        (TabController.TabPages["TabFFB"] as TabPage).Enabled = DIManager.FFBCapable(Device); // If Device is FFB capable, enable the tab
 
       } else { // Device isn't attached, default readouts
         LabelInput.Text = "Input: Attatch First";
@@ -86,6 +124,12 @@ namespace DirectInputExplorer {
       }
     }
 
+    private void ModifyGroupByCheckBoxState(object TriggeringCheckBox) {
+      foreach (Control element in ((Control)TriggeringCheckBox).Parent.Controls) { // For each of the children in the parent GroupBox
+        if (element is CheckBox) continue; // Don't disable yourself
+        element.Enabled = ((CheckBox)TriggeringCheckBox).Checked;
+      }
+    }
     //////////////////////////////////////////////////////////////
     // Debug Functions
     //////////////////////////////////////////////////////////////
@@ -97,8 +141,5 @@ namespace DirectInputExplorer {
       LabelInput.Text = $"buttonsA: {Convert.ToString((long)DeviceState.buttonsA, 2).PadLeft(64, '0')}\nbuttonsB: {Convert.ToString((long)DeviceState.buttonsB, 2).PadLeft(64, '0')}\nlX: {DeviceState.lX}\nlY: {DeviceState.lY}\nlZ: {DeviceState.lZ}\nlU: {DeviceState.lU}\nlV: {DeviceState.lV}\nlRx: {DeviceState.lRx}\nlRy: {DeviceState.lRy}\nlRz: {DeviceState.lRz}\nlVX: {DeviceState.lVX}\nlVY: {DeviceState.lVY}\nlVZ: {DeviceState.lVZ}\nlVU: {DeviceState.lVU}\nlVV: {DeviceState.lVV}\nlVRx: {DeviceState.lVRx}\nlVRy: {DeviceState.lVRy}\nlVRz: {DeviceState.lVRz}\nlAX: {DeviceState.lAX}\nlAY: {DeviceState.lAY}\nlAZ: {DeviceState.lAZ}\nlAU: {DeviceState.lAU}\nlAV: {DeviceState.lAV}\nlARx: {DeviceState.lARx}\nlARy: {DeviceState.lARy}\nlARz: {DeviceState.lARz}\nlFX: {DeviceState.lFX}\nlFY: {DeviceState.lFY}\nlFZ: {DeviceState.lFZ}\nlFU: {DeviceState.lFU}\nlFV: {DeviceState.lFV}\nlFRx: {DeviceState.lFRx}\nlFRy: {DeviceState.lFRy}\nlFRz: {DeviceState.lFRz}\nrgdwPOV: {Convert.ToString((long)DeviceState.rgdwPOV, 2).PadLeft(16, '0')}\n";
     }
 
-    private void SliderConstantForce_Scroll(object sender, EventArgs e) {
-
-    }
   }
 }
