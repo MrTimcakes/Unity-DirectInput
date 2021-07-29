@@ -24,6 +24,7 @@ namespace DirectInputExplorer {
         tab.Enabled = false;
       }
       (TabController.TabPages[0] as TabPage).Enabled = true;
+      (TabController.TabPages["TabMisc"] as TabPage).Enabled = true;
     }
 
     private void ButtonEnumerateDevices_Click(object sender, EventArgs e) {
@@ -114,31 +115,36 @@ namespace DirectInputExplorer {
         DIDEVCAPS DeviceCaps = DIManager.GetDeviceCapabilities(Device);
         LabelCapabilities.Text = $"dwSize: {DeviceCaps.dwSize}\ndwFlags: {DeviceCaps.dwFlags}\ndwDevType: {Convert.ToString(DeviceCaps.dwDevType, 2).PadLeft(32, '0')}\ndwAxes: {DeviceCaps.dwAxes}\ndwButtons: {DeviceCaps.dwButtons}\ndwPOVs: {DeviceCaps.dwPOVs}\ndwFFSamplePeriod: {DeviceCaps.dwFFSamplePeriod}\ndwFFMinTimeResolution: {DeviceCaps.dwFFMinTimeResolution}\ndwFirmwareRevision: {DeviceCaps.dwFirmwareRevision}\ndwHardwareRevision: {DeviceCaps.dwHardwareRevision}\ndwFFDriverVersion: {DeviceCaps.dwFFDriverVersion}";
 
-        (TabController.TabPages["TabFFB"] as TabPage).Enabled = DIManager.FFBCapable(Device); // If Device is FFB capable, enable the tab
+        
+        if (DIManager.FFBCapable(Device)) {
+          (TabController.TabPages["TabFFB"] as TabPage).Enabled = true; // If Device is FFB capable, enable the tab
+          LabelFFBCapabilities.Text = string.Join("\n", DIManager.GetDeviceFFBCapabilities(Device));
+        } else {
+          (TabController.TabPages["TabFFB"] as TabPage).Enabled = false;
+          LabelFFBCapabilities.Text = "FFBCapabilities: FFB Unsupported";
+        }
 
       } else { // Device isn't attached, default readouts
         LabelInput.Text = "Input: Attatch First";
         LabelCapabilities.Text = "Capabilities: Attatch First";
+        LabelFFBCapabilities.Text = "FFBCapabilities: Attatch First";
         (TabController.TabPages["TabInput"] as TabPage).Enabled = false;
         (TabController.TabPages["TabFFB"]   as TabPage).Enabled = false;
       }
     }
 
-    private void ModifyGroupByCheckBoxState(object TriggeringCheckBox) {
-      foreach (Control element in ((Control)TriggeringCheckBox).Parent.Controls) { // For each of the children in the parent GroupBox
-        if (element is CheckBox) continue; // Don't disable yourself
-        element.Enabled = ((CheckBox)TriggeringCheckBox).Checked;
-      }
-    }
     //////////////////////////////////////////////////////////////
     // Debug Functions
     //////////////////////////////////////////////////////////////
     private void ButtonDebug_Click(object sender, EventArgs e) {
-      System.Diagnostics.Debug.WriteLine( DIManager.activeDevices.Count() );
-      System.Diagnostics.Debug.WriteLine( string.Join("\n", DIManager.GetActiveDevices()) );
+      //System.Diagnostics.Debug.WriteLine( DIManager.activeDevices.Count() );
+      //System.Diagnostics.Debug.WriteLine(string.Join("\n", DIManager.GetActiveDevices()));
 
-      FlatJoyState2 DeviceState = DIManager.GetDeviceState(DIManager.devices[ComboBoxDevices.SelectedIndex]);
-      LabelInput.Text = $"buttonsA: {Convert.ToString((long)DeviceState.buttonsA, 2).PadLeft(64, '0')}\nbuttonsB: {Convert.ToString((long)DeviceState.buttonsB, 2).PadLeft(64, '0')}\nlX: {DeviceState.lX}\nlY: {DeviceState.lY}\nlZ: {DeviceState.lZ}\nlU: {DeviceState.lU}\nlV: {DeviceState.lV}\nlRx: {DeviceState.lRx}\nlRy: {DeviceState.lRy}\nlRz: {DeviceState.lRz}\nlVX: {DeviceState.lVX}\nlVY: {DeviceState.lVY}\nlVZ: {DeviceState.lVZ}\nlVU: {DeviceState.lVU}\nlVV: {DeviceState.lVV}\nlVRx: {DeviceState.lVRx}\nlVRy: {DeviceState.lVRy}\nlVRz: {DeviceState.lVRz}\nlAX: {DeviceState.lAX}\nlAY: {DeviceState.lAY}\nlAZ: {DeviceState.lAZ}\nlAU: {DeviceState.lAU}\nlAV: {DeviceState.lAV}\nlARx: {DeviceState.lARx}\nlARy: {DeviceState.lARy}\nlARz: {DeviceState.lARz}\nlFX: {DeviceState.lFX}\nlFY: {DeviceState.lFY}\nlFZ: {DeviceState.lFZ}\nlFU: {DeviceState.lFU}\nlFV: {DeviceState.lFV}\nlFRx: {DeviceState.lFRx}\nlFRy: {DeviceState.lFRy}\nlFRz: {DeviceState.lFRz}\nrgdwPOV: {Convert.ToString((long)DeviceState.rgdwPOV, 2).PadLeft(16, '0')}\n";
+      //DIManager.EnableFFBEffect(DIManager.devices[ComboBoxDevices.SelectedIndex], EffectsType.ConstantForce);
+
+      //LabelDebug.Text = string.Join("\n", DIManager.GetDeviceFFBCapabilities(DIManager.devices[ComboBoxDevices.SelectedIndex]));
+
+      LabelDebug.Text = string.Join("\n", DIManager.DEBUG1(DIManager.devices[ComboBoxDevices.SelectedIndex]));
     }
 
   }

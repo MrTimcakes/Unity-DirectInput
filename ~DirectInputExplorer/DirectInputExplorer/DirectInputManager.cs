@@ -13,6 +13,9 @@ namespace DirectInputManager {
     [DllImport(DLLFile)] public static extern int GetDeviceStateRaw(string guidInstance, out DIJOYSTATE2 DeviceState);
     [DllImport(DLLFile)] public static extern int GetDeviceCapabilities(string guidInstance, out DIDEVCAPS DeviceCapabilitiesOut);
     [DllImport(DLLFile)] public static extern int GetActiveDevices([MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] ActiveGUIDs);
+    [DllImport(DLLFile)] public static extern int CreateFFBEffect(string guidInstance, EffectsType effectsType);
+    [DllImport(DLLFile)] public static extern int EnumerateFFBEffects(string guidInstance, [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] SupportedFFBEffects);
+    [DllImport(DLLFile)] public static extern int DEBUG1(string guidInstance, [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] DEBUGDATA);
   }
   class DIManager {
     //////////////////////////////////////////////////////////////
@@ -124,6 +127,29 @@ namespace DirectInputManager {
     
     public static bool isDeviceActive(DeviceInfo device) {
       return _activeDevices.ContainsKey(device.guidInstance);
+    }
+
+    // Enables an FFB Effect 
+    public static bool EnableFFBEffect(DeviceInfo device, EffectsType effectsType) {
+      int hresult = Native.CreateFFBEffect(device.guidInstance, effectsType);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] CreateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
+
+    // Enables an FFB Effect 
+    public static string[] GetDeviceFFBCapabilities(DeviceInfo device) {
+      string[] SupportedFFBEffects = null;
+      int hresult = Native.EnumerateFFBEffects(device.guidInstance, out SupportedFFBEffects);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] GetDeviceFFBCapabilities Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+      return SupportedFFBEffects;
+    }
+
+    public static string[] DEBUG1(DeviceInfo device) {
+      string[] DEBUGDATA = null;
+      int hresult = Native.DEBUG1(device.guidInstance, out DEBUGDATA);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] DEBUG1 Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+
+      return DEBUGDATA;
     }
 
   }

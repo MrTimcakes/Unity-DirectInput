@@ -38,6 +38,7 @@ namespace DirectInputExplorer
       this.ButtonRemove = new System.Windows.Forms.Button();
       this.TabController = new System.Windows.Forms.TabControl();
       this.TabDeviceInfo = new System.Windows.Forms.TabPage();
+      this.LabelFFBCapabilities = new System.Windows.Forms.Label();
       this.LabelCapabilities = new System.Windows.Forms.Label();
       this.TabInput = new System.Windows.Forms.TabPage();
       this.LabelInput = new System.Windows.Forms.Label();
@@ -180,6 +181,7 @@ namespace DirectInputExplorer
       // TabDeviceInfo
       // 
       this.TabDeviceInfo.Controls.Add(this.LabelDeviceInfo);
+      this.TabDeviceInfo.Controls.Add(this.LabelFFBCapabilities);
       this.TabDeviceInfo.Controls.Add(this.LabelCapabilities);
       this.TabDeviceInfo.Location = new System.Drawing.Point(4, 34);
       this.TabDeviceInfo.Name = "TabDeviceInfo";
@@ -187,6 +189,16 @@ namespace DirectInputExplorer
       this.TabDeviceInfo.TabIndex = 3;
       this.TabDeviceInfo.Text = "Info";
       this.TabDeviceInfo.UseVisualStyleBackColor = true;
+      // 
+      // LabelFFBCapabilities
+      // 
+      this.LabelFFBCapabilities.AutoSize = true;
+      this.LabelFFBCapabilities.Location = new System.Drawing.Point(5, 494);
+      this.LabelFFBCapabilities.MaximumSize = new System.Drawing.Size(1226, 0);
+      this.LabelFFBCapabilities.Name = "LabelFFBCapabilities";
+      this.LabelFFBCapabilities.Size = new System.Drawing.Size(234, 25);
+      this.LabelFFBCapabilities.TabIndex = 4;
+      this.LabelFFBCapabilities.Text = "FFBCapabilities: Attatch First";
       // 
       // LabelCapabilities
       // 
@@ -914,6 +926,7 @@ namespace DirectInputExplorer
     private System.Windows.Forms.CheckBox CBInertia;
     private System.Windows.Forms.CheckBox CBFriction;
     private System.Windows.Forms.CheckBox CBDamper;
+    private System.Windows.Forms.Label LabelFFBCapabilities;
   }
 }
 
