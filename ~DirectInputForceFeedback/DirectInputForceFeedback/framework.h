@@ -7,6 +7,7 @@
 // C++ Includes
 #include <vector>
 #include <string>
+#include <map>
 
 // DirectInput
 #define DIRECTINPUT_VERSION 0x0800

@@ -6,8 +6,13 @@
 std::vector<DeviceInfo> _DeviceInstances;
 std::vector<LPDIRECTINPUTDEVICE8> ActiveDevices; // Store all of the connected devices
 
+std::map<std::string, std::vector<DIEFFECTINFO>> DeviceEnumeratedEffects;
 
-/// Create the _DirectInput global
+//////////////////////////////////////////////////////////////
+// DLL Exported Functions
+//////////////////////////////////////////////////////////////
+
+// Create the _DirectInput global
 HRESULT StartDirectInput() {
   if (_DirectInput != NULL) { return S_OK; } // Already initialised
   return DirectInput8Create(
@@ -24,9 +29,9 @@ DeviceInfo* EnumerateDevices(int& deviceCount) {
   if (_DirectInput == NULL) { return NULL; } // If DI not ready, return nothing
   _DeviceInstances.clear(); // Clear devices
   HRESULT hr = _DirectInput->EnumDevices( // Invoke device enumeration to the _EnumDevicesCallback callback
-    DI8DEVCLASS_GAMECTRL,
+    DI8DEVCLASS_GAMECTRL, // List devices of type GameController
     _EnumDevicesCallback,
-    NULL,
+    NULL, // Passed to callback as optional arg
     DIEDFL_ATTACHEDONLY //| DIEDFL_FORCEFEEDBACK
   );
 
@@ -37,36 +42,6 @@ DeviceInfo* EnumerateDevices(int& deviceCount) {
     deviceCount = 0;
   }
   return NULL;
-}
-
-// Callback for each device enumerated, each device is added to the _DeviceInstances vector
-BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* pInst, void* pContext) {
-  DeviceInfo di = { 0 };
-
-  OLECHAR* guidInstance;
-  StringFromCLSID(pInst->guidInstance, &guidInstance);
-  OLECHAR* guidProduct;
-  StringFromCLSID(pInst->guidProduct, &guidProduct);
-
-  std::string strGuidInstance = utf16ToUTF8(guidInstance);
-  std::string strGuidProduct = utf16ToUTF8(guidProduct);
-  std::string strInstanceName = utf16ToUTF8(pInst->tszInstanceName);
-  std::string strProductName = utf16ToUTF8(pInst->tszProductName);
-
-  di.guidInstance = new char[strGuidInstance.length() + 1];
-  di.guidProduct = new char[strGuidProduct.length() + 1];
-  di.instanceName = new char[strInstanceName.length() + 1];
-  di.productName = new char[strProductName.length() + 1];
-
-  di.deviceType = pInst->dwDevType;
-  strcpy_s(di.guidInstance, strGuidInstance.length() + 1, strGuidInstance.c_str());
-  strcpy_s(di.guidProduct, strGuidProduct.length() + 1, strGuidProduct.c_str());
-  strcpy_s(di.instanceName, strInstanceName.length() + 1, strInstanceName.c_str());
-  strcpy_s(di.productName, strProductName.length() + 1, strProductName.c_str());
-
-  _DeviceInstances.push_back(di);
-
-  return true;
 }
 
 // Create the DirectInput Device and Acquire ready for State retreval & FFB Effects (Requires Cooperation level Exclusive)
@@ -150,31 +125,134 @@ HRESULT GetDeviceCapabilities(LPCSTR guidInstance, /*[out]*/ DIDEVCAPS& deviceCa
 }
 
 // Generate SAFEARRAY of ActiveDevice GUIDs
-HRESULT __stdcall GetActiveDevices(/*[out]*/ SAFEARRAY** activeGUIDs){
+HRESULT GetActiveDevices(/*[out]*/ SAFEARRAY** activeGUIDs){
   HRESULT hr = E_FAIL;
-  try{
-    // Source data
-    std::vector<std::wstring> sourceData;
-    for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-      wchar_t GUIDwchar[40] = { 0 };
-      StringFromGUID2(Device2GUID(Device), GUIDwchar, 40);
-      sourceData.push_back(GUIDwchar);
-    }
 
+  std::vector<std::wstring> sourceData;
+  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
+    wchar_t GUIDwchar[40] = { 0 };
+    StringFromGUID2(Device2GUID(Device), GUIDwchar, 40);
+    sourceData.push_back(GUIDwchar);
+  }
+
+  hr = BuildSafeArray(sourceData, activeGUIDs);
+  return hr;
+}
+
+// 
+HRESULT CreateFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
+  HRESULT hr = E_FAIL; // Default if we can't find the specified device
+
+  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
+    if (GUIDMatch(guidInstance, Device)) {
+      // Create that FFB Effect
+
+      // Set Cooperation level to exclusive
+      //HWND hWnd = FindMainWindow(GetCurrentProcessId());
+      //if (FAILED(hr = Device->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND))) { return hr; } // DISCL_EXCLUSIVE is required for FFB
+
+      // Check for existing events
+      // Enumerate Axis?
+
+
+      //An array of axes that will be involved in the effect.For a joystick, this array normally consists of the identifiers for the x - axis and the y - axis.
+      //An array of values for setting the direction.The values differ according to both the number of axesand whether you want to use polar, spherical, or Cartesian coordinates.For a full explanation, see Effect Direction.
+      //A structure of type - specific parameters.In the example, because you are creating a periodic effect, this is of type DIPERIODIC.
+      //A DIENVELOPE structure for defining an envelope to be applied to the effect.
+      //A DIEFFECT structure to contain the basic parameters for the effect.
+      
+    }
+  }
+
+  return hr;
+}
+
+HRESULT DestroyFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
+  HRESULT hr = E_FAIL; // Default if we can't find the specified device
+
+  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
+    if (GUIDMatch(guidInstance, Device)) {
+      // Destroy Effect
+    }
+  }
+
+  return hr;
+}
+
+// Set the Autocenter property for a DI device, pass device GUID and bool to enable or disable
+HRESULT SetAutocenter(LPCSTR guidInstance, bool AutocenterState) {
+  HRESULT hr = E_FAIL; // Default if we can't find the specified device
+
+  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
+    if (GUIDMatch(guidInstance, Device)) {
+      hr = SetAutocenter(Device, AutocenterState);
+    }
+  }
+
+  return hr;
+}
+
+// Generate SAFEARRAY of possible FFB Effects for this Device
+HRESULT EnumerateFFBEffects(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBEffects) {
+  HRESULT hr = E_FAIL; // Default if we can't find the specified device
+
+  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
+    if (GUIDMatch(guidInstance, Device)) {
+      std::string GUIDString ((LPCSTR)guidInstance); // Convert the LPCSTR to a STL String for use as key in map (String as GUID has no operater<)
+      DeviceEnumeratedEffects[GUIDString].clear(); // Clear effects for this device
+      hr = Device->EnumEffects( &_EnumFFBEffectsCallbackMap, &GUIDString, DIEFT_ALL); // Callback adds each effect to DeviceEnumeratedEffects with key as device's GUID
+
+      // Generate SafeArray of supported effects
+      std::vector<std::wstring> SAData; // Store what will be in the SafeArray
+      for (const auto& Effect : DeviceEnumeratedEffects[GUIDString]) {
+        SAData.push_back(Effect.tszName); // Add each effect name
+      }
+      hr = BuildSafeArray(SAData, FFBEffects);
+    }
+  }
+
+  return hr;
+}
+
+// Generate SAFEARRAY of DEBUG data
+HRESULT DEBUG1(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** DebugData) {
+  HRESULT hr = E_FAIL;
+
+  std::string GUIDString((LPCSTR)guidInstance);
+
+  std::wstring wGUIDString = string_to_wstring(GUIDString);
+
+  std::vector<std::wstring> sourceData;
+  //sourceData.push_back(L"WideStr");
+  sourceData.push_back(wGUIDString);
+  sourceData.push_back( std::to_wstring(DeviceEnumeratedEffects.size()) );
+  sourceData.push_back( std::to_wstring(DeviceEnumeratedEffects[GUIDString].size()) );
+
+  for (const auto& Effect : DeviceEnumeratedEffects[GUIDString]) {
+    sourceData.push_back(Effect.tszName); // Add each effect name
+  }
+
+  hr = BuildSafeArray(sourceData, DebugData);
+
+  return hr;
+}
+
+HRESULT BuildSafeArray(std::vector<std::wstring> sourceData, /*[out]*/ SAFEARRAY** SafeArrayData) {
+  HRESULT hr = E_FAIL;
+  try {
     // Build the destination SAFEARRAY from the source data
-    const LONG count = static_cast<LONG>(sourceData.size());
-    CComSafeArray<BSTR> SAFEARRAY(count);
-    for (LONG i = 0; i < count; i++){
+    const LONG dataEntries = static_cast<LONG>(sourceData.size());
+    CComSafeArray<BSTR> SAFEARRAY(dataEntries);
+    for (LONG i = 0; i < dataEntries; i++) {
       CComBSTR bstr = ToBstr(sourceData[i]); // Create a BSTR from the std::wstring
-      // Move the BSTR into the safe array
-      if (FAILED(hr = SAFEARRAY.SetAt(i, bstr.Detach(), FALSE))){ AtlThrow(hr); }
+      if (FAILED(hr = SAFEARRAY.SetAt(i, bstr.Detach(), FALSE))) { AtlThrow(hr); } // Move the BSTR into the safe array
     }
 
     // Return the safe array to the caller (transfer ownership)
-    *activeGUIDs = SAFEARRAY.Detach();
-  } catch (const CAtlException& e){
+    *SafeArrayData = SAFEARRAY.Detach();
+  } catch (const CAtlException& e) {
     hr = e;
-  } catch (const std::exception&){
+  } catch (const std::exception&) {
     hr = E_FAIL;
   }
 
@@ -182,18 +260,66 @@ HRESULT __stdcall GetActiveDevices(/*[out]*/ SAFEARRAY** activeGUIDs){
 }
 
 //////////////////////////////////////////////////////////////
+// Callback Functions
+//////////////////////////////////////////////////////////////
+
+// Callback for each device enumerated, each device is added to the _DeviceInstances vector
+BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* pInst, void* pContext) {
+  DeviceInfo di = { 0 };
+
+  OLECHAR* guidInstance;
+  StringFromCLSID(pInst->guidInstance, &guidInstance);
+  OLECHAR* guidProduct;
+  StringFromCLSID(pInst->guidProduct, &guidProduct);
+
+  std::string strGuidInstance = wstring_to_string(guidInstance);
+  std::string strGuidProduct = wstring_to_string(guidProduct);
+  std::string strInstanceName = wstring_to_string(pInst->tszInstanceName);
+  std::string strProductName = wstring_to_string(pInst->tszProductName);
+
+  di.guidInstance = new char[strGuidInstance.length() + 1];
+  di.guidProduct = new char[strGuidProduct.length() + 1];
+  di.instanceName = new char[strInstanceName.length() + 1];
+  di.productName = new char[strProductName.length() + 1];
+
+  di.deviceType = pInst->dwDevType;
+  strcpy_s(di.guidInstance, strGuidInstance.length() + 1, strGuidInstance.c_str());
+  strcpy_s(di.guidProduct, strGuidProduct.length() + 1, strGuidProduct.c_str());
+  strcpy_s(di.instanceName, strInstanceName.length() + 1, strInstanceName.c_str());
+  strcpy_s(di.productName, strProductName.length() + 1, strProductName.c_str());
+
+  _DeviceInstances.push_back(di);
+
+  return true;
+}
+
+BOOL CALLBACK _EnumFFBEffectsCallbackMap(LPCDIEFFECTINFO pdei, LPVOID pvRef) {
+  std::string GUIDString = *reinterpret_cast<std::string*>(pvRef); // Device GUID passed in as 2nd arg
+  DeviceEnumeratedEffects[GUIDString].push_back(*pdei); // Add the DIEffectInfo to the entry for this Device
+  return DIENUM_CONTINUE; // Continue to next effect
+}
+
+//////////////////////////////////////////////////////////////
 // Helper Functions
 //////////////////////////////////////////////////////////////
 
+// Utilities for converting string types ( https://stackoverflow.com/a/3999597/3055031 )
+// Convert a wide Unicode string to an UTF8 string
+std::string wstring_to_string(const std::wstring& wstr){
+  if (wstr.empty()) return std::string();
+  int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+  std::string strTo(size_needed, 0);
+  WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+  return strTo;
+}
 
-//Helper function for converting wide strings to regular strings
-std::string utf16ToUTF8(const std::wstring& s) {
-  const int size = ::WideCharToMultiByte(CP_UTF8, 0, s.c_str(), -1, NULL, 0, 0, NULL);
-
-  std::vector<char> buf(size);
-  ::WideCharToMultiByte(CP_UTF8, 0, s.c_str(), -1, &buf[0], size, 0, NULL);
-
-  return std::string(&buf[0]);
+// Convert an UTF8 string to a wide Unicode String
+std::wstring string_to_wstring(const std::string& str){
+  if (str.empty()) return std::wstring();
+  int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+  std::wstring wstrTo(size_needed, 0);
+  MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+  return wstrTo;
 }
 
 // Return window handle for specified PID
@@ -328,4 +454,19 @@ void DestroyDeviceIfExists(LPCSTR guidInstance) {
       DestroyDevice(guidInstance);
     }
   }
+}
+
+HRESULT SetAutocenter(LPDIRECTINPUTDEVICE8 Device, bool AutocenterState) {
+  HRESULT hr = E_FAIL;
+  DIPROPDWORD DIPropAutoCenter;
+
+  DIPropAutoCenter.diph.dwSize = sizeof(DIPropAutoCenter);
+  DIPropAutoCenter.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+  DIPropAutoCenter.diph.dwObj = 0;
+  DIPropAutoCenter.diph.dwHow = DIPH_DEVICE;
+  DIPropAutoCenter.dwData = AutocenterState ? DIPROPAUTOCENTER_ON : DIPROPAUTOCENTER_OFF;
+
+  hr = Device->SetProperty(DIPROP_AUTOCENTER, &DIPropAutoCenter.diph);
+
+  return hr;
 }
