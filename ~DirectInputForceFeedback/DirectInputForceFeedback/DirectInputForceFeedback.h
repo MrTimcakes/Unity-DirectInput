@@ -120,5 +120,4 @@ bool GUIDMatch(LPCSTR guidInstance, LPDIRECTINPUTDEVICE8 Device);
 GUID Device2GUID(LPDIRECTINPUTDEVICE8 Device);
 inline CComBSTR ToBstr(const std::wstring& s);
 void DestroyDeviceIfExists(LPCSTR guidInstance);
-HRESULT SetAutocenter(LPDIRECTINPUTDEVICE8 Device, bool AutocenterState);
 HRESULT BuildSafeArray(std::vector<std::wstring> sourceData, /*[out]*/ SAFEARRAY** SafeArrayData);

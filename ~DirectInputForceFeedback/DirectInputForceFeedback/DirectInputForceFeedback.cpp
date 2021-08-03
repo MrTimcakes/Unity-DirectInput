@@ -166,8 +166,15 @@ HRESULT DestroyFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
 HRESULT SetAutocenter(LPCSTR guidInstance, bool AutocenterState) {
   HRESULT hr = E_FAIL;
   std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
+  DIPROPDWORD DIPropAutoCenter;
 
-  hr = SetAutocenter(_ActiveDevices[GUIDString], AutocenterState);
+  DIPropAutoCenter.diph.dwSize = sizeof(DIPropAutoCenter);
+  DIPropAutoCenter.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+  DIPropAutoCenter.diph.dwObj = 0;
+  DIPropAutoCenter.diph.dwHow = DIPH_DEVICE;
+  DIPropAutoCenter.dwData = AutocenterState ? DIPROPAUTOCENTER_ON : DIPROPAUTOCENTER_OFF;
+
+  hr = _ActiveDevices[GUIDString]->SetProperty(DIPROP_AUTOCENTER, &DIPropAutoCenter.diph);
 
   return hr;
 }
@@ -429,19 +436,4 @@ inline CComBSTR ToBstr(const std::wstring& s) {
 void DestroyDeviceIfExists(LPCSTR guidInstance) {
   std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return; // Device not attached, fail
   DestroyDevice(guidInstance);
-}
-
-HRESULT SetAutocenter(LPDIRECTINPUTDEVICE8 Device, bool AutocenterState) {
-  HRESULT hr = E_FAIL;
-  DIPROPDWORD DIPropAutoCenter;
-
-  DIPropAutoCenter.diph.dwSize = sizeof(DIPropAutoCenter);
-  DIPropAutoCenter.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-  DIPropAutoCenter.diph.dwObj = 0;
-  DIPropAutoCenter.diph.dwHow = DIPH_DEVICE;
-  DIPropAutoCenter.dwData = AutocenterState ? DIPROPAUTOCENTER_ON : DIPROPAUTOCENTER_OFF;
-
-  hr = Device->SetProperty(DIPROP_AUTOCENTER, &DIPropAutoCenter.diph);
-
-  return hr;
 }
