@@ -4,9 +4,9 @@
 
 
 std::vector<DeviceInfo> _DeviceInstances;
-std::vector<LPDIRECTINPUTDEVICE8> ActiveDevices; // Store all of the connected devices
 
-std::map<std::string, std::vector<DIEFFECTINFO>> DeviceEnumeratedEffects;
+std::map<std::string, LPDIRECTINPUTDEVICE8> _ActiveDevices; // Store all of the connected devices
+std::map<std::string, std::vector<DIEFFECTINFO>> _DeviceEnumeratedEffects;
 
 //////////////////////////////////////////////////////////////
 // DLL Exported Functions
@@ -19,7 +19,7 @@ HRESULT StartDirectInput() {
     GetModuleHandle(NULL),
     DIRECTINPUT_VERSION,
     IID_IDirectInput8,
-    (void**)&_DirectInput,
+    (void**)&_DirectInput, // Place our DirectInput instance in _DirectInput
     NULL
   );
 }
@@ -59,7 +59,9 @@ HRESULT CreateDevice(LPCSTR guidInstance) {
   if (FAILED(hr = DIDevice->SetDataFormat(&c_dfDIJoystick2))) { return hr; }
   if (FAILED(hr = DIDevice->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND))) { return hr; }
   if (FAILED(hr = DIDevice->Acquire())) { return hr; }
-  ActiveDevices.push_back( DIDevice ); // Add this device to the Vector of active devices
+
+  std::string GUIDString((LPCSTR)guidInstance); // Convert the LPCSTR to a STL String for use as key in map (String as GUID has no operater<)
+  _ActiveDevices[GUIDString] = DIDevice;
 
   return S_OK;
 }
@@ -67,59 +69,47 @@ HRESULT CreateDevice(LPCSTR guidInstance) {
 // Remove the DirectInput Device, Unacquire and remove from ActiveDevices
 HRESULT DestroyDevice(LPCSTR guidInstance) {
   HRESULT hr = E_FAIL;
-  int idx = 0;
-  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-    if (GUIDMatch(guidInstance, Device)) {
-      // TODO: Stop Effects?
-      if (SUCCEEDED(hr = Device->Unacquire())) { // DirectInput Unacquire
-        //ActiveDevices.erase(ActiveDevices.begin() + idx); // Remove the device from our ActiveDevices vector     // Performance issues as vector grows? Swap to last element then remove?
-        if (idx != ActiveDevices.size() - 1) { ActiveDevices[idx] = std::move(ActiveDevices.back()); } // Swap to back (Avoiding self assignment)
-        ActiveDevices.pop_back();
-      }
-    }
-    idx++;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
+
+  // TODO: Stop FFB Effects First?
+  if (SUCCEEDED(hr = _ActiveDevices[GUIDString]->Unacquire())) {
+    _ActiveDevices.erase(GUIDString);
   }
+
   return hr;
 }
 
 // Fetch the Device State, give GUID of the Device (Must already be created by CreateDevice) and out FlatJoyState2
 HRESULT GetDeviceState(LPCSTR guidInstance, /*[out]*/ FlatJoyState2& deviceState) {
   HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
 
-  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-    if (GUIDMatch(guidInstance, Device)) {
-      DIJOYSTATE2 DeviceStateRaw;
-      hr = Device->GetDeviceState(sizeof(DIJOYSTATE2), &DeviceStateRaw); // Fetch the device State
-      deviceState = FlattenDIJOYSTATE2(DeviceStateRaw); // Convert to a friendlier format (Nested arrays are more difficult to check for change)
-    }
-  }
+  DIJOYSTATE2 DeviceStateRaw;
+  hr = _ActiveDevices[GUIDString]->GetDeviceState(sizeof(DIJOYSTATE2), &DeviceStateRaw); // Fetch the device State
+  deviceState = FlattenDIJOYSTATE2(DeviceStateRaw); // Convert to a friendlier format (Nested arrays are more difficult to check for change)
+
   return hr;
 }
 
 // Fetch the Device State, give GUID of the Device (Must already be created by CreateDevice) and out DIJOYSTATE2
 HRESULT GetDeviceStateRaw(LPCSTR guidInstance, /*[out]*/ DIJOYSTATE2& deviceState) {
   HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
 
-  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-    if (GUIDMatch(guidInstance, Device)) {
-      hr = Device->GetDeviceState(sizeof(DIJOYSTATE2), &deviceState); // Fetch the device State
-    }
-  }
+  hr = _ActiveDevices[GUIDString]->GetDeviceState(sizeof(DIJOYSTATE2), &deviceState); // Fetch the device State
+
   return hr;
 }
 
 // Fetch the capabilities of the device, returns DIDEVCAPS see https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416607(v=vs.85)
 HRESULT GetDeviceCapabilities(LPCSTR guidInstance, /*[out]*/ DIDEVCAPS& deviceCapabilitiesOut) {
   HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
 
-  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-    if (GUIDMatch(guidInstance, Device)) {
-      DIDEVCAPS DeviceCapabilities;
-      DeviceCapabilities.dwSize = sizeof(DIDEVCAPS);
-      hr = Device->GetCapabilities(&DeviceCapabilities);
-      deviceCapabilitiesOut = DeviceCapabilities;
-    }
-  }
+  DIDEVCAPS DeviceCapabilities;
+  DeviceCapabilities.dwSize = sizeof(DIDEVCAPS);
+  hr = _ActiveDevices[GUIDString]->GetCapabilities(&DeviceCapabilities);
+  deviceCapabilitiesOut = DeviceCapabilities;
 
   return hr;
 }
@@ -128,88 +118,74 @@ HRESULT GetDeviceCapabilities(LPCSTR guidInstance, /*[out]*/ DIDEVCAPS& deviceCa
 HRESULT GetActiveDevices(/*[out]*/ SAFEARRAY** activeGUIDs){
   HRESULT hr = E_FAIL;
 
-  std::vector<std::wstring> sourceData;
-  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-    wchar_t GUIDwchar[40] = { 0 };
-    StringFromGUID2(Device2GUID(Device), GUIDwchar, 40);
-    sourceData.push_back(GUIDwchar);
+  std::vector<std::wstring> SAData;
+  for (const auto& [GUIDString, Device] : _ActiveDevices) {
+    SAData.push_back( string_to_wstring(GUIDString) );
   }
 
-  hr = BuildSafeArray(sourceData, activeGUIDs);
+  hr = BuildSafeArray(SAData, activeGUIDs);
   return hr;
 }
 
 // 
 HRESULT CreateFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
-  HRESULT hr = E_FAIL; // Default if we can't find the specified device
+  HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
 
-  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-    if (GUIDMatch(guidInstance, Device)) {
-      // Create that FFB Effect
+  // Create that FFB Effect
 
-      // Set Cooperation level to exclusive
-      //HWND hWnd = FindMainWindow(GetCurrentProcessId());
-      //if (FAILED(hr = Device->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND))) { return hr; } // DISCL_EXCLUSIVE is required for FFB
+  // Set Cooperation level to exclusive
+  //HWND hWnd = FindMainWindow(GetCurrentProcessId());
+  //if (FAILED(hr = Device->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND))) { return hr; } // DISCL_EXCLUSIVE is required for FFB
 
-      // Check for existing events
-      // Enumerate Axis?
+  // Check for existing events
+  // Enumerate Axis?
 
 
-      //An array of axes that will be involved in the effect.For a joystick, this array normally consists of the identifiers for the x - axis and the y - axis.
-      //An array of values for setting the direction.The values differ according to both the number of axesand whether you want to use polar, spherical, or Cartesian coordinates.For a full explanation, see Effect Direction.
-      //A structure of type - specific parameters.In the example, because you are creating a periodic effect, this is of type DIPERIODIC.
-      //A DIENVELOPE structure for defining an envelope to be applied to the effect.
-      //A DIEFFECT structure to contain the basic parameters for the effect.
+  //An array of axes that will be involved in the effect.For a joystick, this array normally consists of the identifiers for the x - axis and the y - axis.
+  //An array of values for setting the direction.The values differ according to both the number of axesand whether you want to use polar, spherical, or Cartesian coordinates.For a full explanation, see Effect Direction.
+  //A structure of type - specific parameters.In the example, because you are creating a periodic effect, this is of type DIPERIODIC.
+  //A DIENVELOPE structure for defining an envelope to be applied to the effect.
+  //A DIEFFECT structure to contain the basic parameters for the effect.
       
-    }
-  }
+
 
   return hr;
 }
 
 HRESULT DestroyFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
-  HRESULT hr = E_FAIL; // Default if we can't find the specified device
+  HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
 
-  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-    if (GUIDMatch(guidInstance, Device)) {
-      // Destroy Effect
-    }
-  }
+  // Destroy Effect
 
   return hr;
 }
 
 // Set the Autocenter property for a DI device, pass device GUID and bool to enable or disable
 HRESULT SetAutocenter(LPCSTR guidInstance, bool AutocenterState) {
-  HRESULT hr = E_FAIL; // Default if we can't find the specified device
+  HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
 
-  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-    if (GUIDMatch(guidInstance, Device)) {
-      hr = SetAutocenter(Device, AutocenterState);
-    }
-  }
+  hr = SetAutocenter(_ActiveDevices[GUIDString], AutocenterState);
 
   return hr;
 }
 
 // Generate SAFEARRAY of possible FFB Effects for this Device
 HRESULT EnumerateFFBEffects(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBEffects) {
-  HRESULT hr = E_FAIL; // Default if we can't find the specified device
+  HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
 
-  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-    if (GUIDMatch(guidInstance, Device)) {
-      std::string GUIDString ((LPCSTR)guidInstance); // Convert the LPCSTR to a STL String for use as key in map (String as GUID has no operater<)
-      DeviceEnumeratedEffects[GUIDString].clear(); // Clear effects for this device
-      hr = Device->EnumEffects( &_EnumFFBEffectsCallbackMap, &GUIDString, DIEFT_ALL); // Callback adds each effect to DeviceEnumeratedEffects with key as device's GUID
+  _DeviceEnumeratedEffects[GUIDString].clear(); // Clear effects for this device
+  hr = _ActiveDevices[GUIDString]->EnumEffects(&_EnumFFBEffectsCallbackMap, &GUIDString, DIEFT_ALL); // Callback adds each effect to _DeviceEnumeratedEffects with key as device's GUID
 
-      // Generate SafeArray of supported effects
-      std::vector<std::wstring> SAData; // Store what will be in the SafeArray
-      for (const auto& Effect : DeviceEnumeratedEffects[GUIDString]) {
-        SAData.push_back(Effect.tszName); // Add each effect name
-      }
-      hr = BuildSafeArray(SAData, FFBEffects);
-    }
+  // Generate SafeArray of supported effects
+  std::vector<std::wstring> SAData; // Store what will be in the SafeArray
+  for (const auto& Effect : _DeviceEnumeratedEffects[GUIDString]) {
+    SAData.push_back(Effect.tszName); // Add each effect name
   }
+  hr = BuildSafeArray(SAData, FFBEffects);
 
   return hr;
 }
@@ -225,10 +201,10 @@ HRESULT DEBUG1(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** DebugData) {
   std::vector<std::wstring> sourceData;
   //sourceData.push_back(L"WideStr");
   sourceData.push_back(wGUIDString);
-  sourceData.push_back( std::to_wstring(DeviceEnumeratedEffects.size()) );
-  sourceData.push_back( std::to_wstring(DeviceEnumeratedEffects[GUIDString].size()) );
+  sourceData.push_back( std::to_wstring(_DeviceEnumeratedEffects.size()) );
+  sourceData.push_back( std::to_wstring(_DeviceEnumeratedEffects[GUIDString].size()) );
 
-  for (const auto& Effect : DeviceEnumeratedEffects[GUIDString]) {
+  for (const auto& Effect : _DeviceEnumeratedEffects[GUIDString]) {
     sourceData.push_back(Effect.tszName); // Add each effect name
   }
 
@@ -237,27 +213,6 @@ HRESULT DEBUG1(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** DebugData) {
   return hr;
 }
 
-HRESULT BuildSafeArray(std::vector<std::wstring> sourceData, /*[out]*/ SAFEARRAY** SafeArrayData) {
-  HRESULT hr = E_FAIL;
-  try {
-    // Build the destination SAFEARRAY from the source data
-    const LONG dataEntries = static_cast<LONG>(sourceData.size());
-    CComSafeArray<BSTR> SAFEARRAY(dataEntries);
-    for (LONG i = 0; i < dataEntries; i++) {
-      CComBSTR bstr = ToBstr(sourceData[i]); // Create a BSTR from the std::wstring
-      if (FAILED(hr = SAFEARRAY.SetAt(i, bstr.Detach(), FALSE))) { AtlThrow(hr); } // Move the BSTR into the safe array
-    }
-
-    // Return the safe array to the caller (transfer ownership)
-    *SafeArrayData = SAFEARRAY.Detach();
-  } catch (const CAtlException& e) {
-    hr = e;
-  } catch (const std::exception&) {
-    hr = E_FAIL;
-  }
-
-  return hr;
-}
 
 //////////////////////////////////////////////////////////////
 // Callback Functions
@@ -295,13 +250,36 @@ BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* pInst, void* pContext
 
 BOOL CALLBACK _EnumFFBEffectsCallbackMap(LPCDIEFFECTINFO pdei, LPVOID pvRef) {
   std::string GUIDString = *reinterpret_cast<std::string*>(pvRef); // Device GUID passed in as 2nd arg
-  DeviceEnumeratedEffects[GUIDString].push_back(*pdei); // Add the DIEffectInfo to the entry for this Device
+  _DeviceEnumeratedEffects[GUIDString].push_back(*pdei); // Add the DIEffectInfo to the entry for this Device
   return DIENUM_CONTINUE; // Continue to next effect
 }
 
 //////////////////////////////////////////////////////////////
 // Helper Functions
 //////////////////////////////////////////////////////////////
+
+// Generate SAFEARRAY from vector of wstrings, useful for exporing data across interop boundary
+HRESULT BuildSafeArray(std::vector<std::wstring> sourceData, /*[out]*/ SAFEARRAY** SafeArrayData) {
+  HRESULT hr = E_FAIL;
+  try {
+    // Build the destination SAFEARRAY from the source data
+    const LONG dataEntries = static_cast<LONG>(sourceData.size());
+    CComSafeArray<BSTR> SAFEARRAY(dataEntries);
+    for (LONG i = 0; i < dataEntries; i++) {
+      CComBSTR bstr = ToBstr(sourceData[i]); // Create a BSTR from the std::wstring
+      if (FAILED(hr = SAFEARRAY.SetAt(i, bstr.Detach(), FALSE))) { AtlThrow(hr); } // Move the BSTR into the safe array
+    }
+
+    // Return the safe array to the caller (transfer ownership)
+    *SafeArrayData = SAFEARRAY.Detach();
+  } catch (const CAtlException& e) {
+    hr = e;
+  } catch (const std::exception&) {
+    hr = E_FAIL;
+  }
+
+  return hr;
+}
 
 // Utilities for converting string types ( https://stackoverflow.com/a/3999597/3055031 )
 // Convert a wide Unicode string to an UTF8 string
@@ -449,11 +427,8 @@ inline CComBSTR ToBstr(const std::wstring& s) {
 }
 
 void DestroyDeviceIfExists(LPCSTR guidInstance) {
-  for (LPDIRECTINPUTDEVICE8 Device : ActiveDevices) {
-    if (GUIDMatch(guidInstance, Device)) {
-      DestroyDevice(guidInstance);
-    }
-  }
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return; // Device not attached, fail
+  DestroyDevice(guidInstance);
 }
 
 HRESULT SetAutocenter(LPDIRECTINPUTDEVICE8 Device, bool AutocenterState) {
