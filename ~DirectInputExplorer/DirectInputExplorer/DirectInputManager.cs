@@ -13,8 +13,10 @@ namespace DirectInputManager {
     [DllImport(DLLFile)] public static extern int GetDeviceStateRaw(string guidInstance, out DIJOYSTATE2 DeviceState);
     [DllImport(DLLFile)] public static extern int GetDeviceCapabilities(string guidInstance, out DIDEVCAPS DeviceCapabilitiesOut);
     [DllImport(DLLFile)] public static extern int GetActiveDevices([MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] ActiveGUIDs);
-    [DllImport(DLLFile)] public static extern int CreateFFBEffect(string guidInstance, EffectsType effectsType);
     [DllImport(DLLFile)] public static extern int EnumerateFFBEffects(string guidInstance, [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] SupportedFFBEffects);
+    [DllImport(DLLFile)] public static extern int EnumerateFFBAxis(string guidInstance, [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] SupportedFFBAxis);
+    [DllImport(DLLFile)] public static extern int CreateFFBEffect(string guidInstance, EffectsType effectsType);
+    [DllImport(DLLFile)] public static extern int DestroyFFBEffect(string guidInstance, EffectsType effectsType);
     [DllImport(DLLFile)] public static extern int DEBUG1(string guidInstance, [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] DEBUGDATA);
   }
   class DIManager {
@@ -135,8 +137,18 @@ namespace DirectInputManager {
       if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] CreateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
+    
+    // Destroys an FFB Effect 
+    public static bool DestroyFFBEffect(DeviceInfo device, EffectsType effectsType) {
+      int hresult = Native.DestroyFFBEffect(device.guidInstance, effectsType);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] DestroyFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
 
-    // Enables an FFB Effect 
+    // Disables an FFB Effect (Alias of DestroyFFBEffect)
+    public static bool DisableFFBEffect(DeviceInfo device, EffectsType effectsType) => DestroyFFBEffect(device, effectsType);
+
+    // Fetches supported FFB Effects by specified Device
     public static string[] GetDeviceFFBCapabilities(DeviceInfo device) {
       string[] SupportedFFBEffects = null;
       int hresult = Native.EnumerateFFBEffects(device.guidInstance, out SupportedFFBEffects);
