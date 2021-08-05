@@ -67,16 +67,24 @@ namespace DirectInputExplorer {
 
     private void FFB_CheckBox_CheckedChanged(object sender, EventArgs e) {
       CheckBox TriggeringCheckBox = (CheckBox)sender;
+      EffectsType TriggeringEffectType = (EffectsType)Enum.Parse(typeof(EffectsType), TriggeringCheckBox.Tag.ToString());
+
+      if (TriggeringCheckBox.Checked) { // Enable the effect
+        TriggeringCheckBox.Checked = DIManager.EnableFFBEffect(DIManager.devices[ComboBoxDevices.SelectedIndex], TriggeringEffectType); // If enable fails, checkbox will be unchecked
+      } else { // Disable the effect
+        TriggeringCheckBox.Checked = !DIManager.DestroyFFBEffect(DIManager.devices[ComboBoxDevices.SelectedIndex], TriggeringEffectType);
+      }
+
       foreach (Control element in TriggeringCheckBox.Parent.Controls) { // For each of the children in the parent GroupBox
         if (element is CheckBox) continue; // Don't disable yourself
         element.Enabled = TriggeringCheckBox.Checked;
       }
+
     }
 
     private void FFB_GroupBox_Click(object sender, EventArgs e) {
       CheckBox CB = ((GroupBox)sender).Controls.Find("CB" + ((GroupBox)sender).Tag, false).FirstOrDefault() as CheckBox;
       CB.Checked = !CB.Checked;
-      FFB_CheckBox_CheckedChanged(CB, e);
     }
 
     private void FFB_Label_Click(object sender, EventArgs e) {
