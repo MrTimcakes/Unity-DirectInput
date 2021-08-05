@@ -510,6 +510,7 @@ namespace DirectInputExplorer
       this.CBInertia.Name = "CBInertia";
       this.CBInertia.Size = new System.Drawing.Size(22, 21);
       this.CBInertia.TabIndex = 1;
+      this.CBInertia.Tag = "Inertia";
       this.CBInertia.UseVisualStyleBackColor = true;
       this.CBInertia.CheckedChanged += new System.EventHandler(this.FFB_CheckBox_CheckedChanged);
       // 
@@ -612,6 +613,7 @@ namespace DirectInputExplorer
       this.CBFriction.Name = "CBFriction";
       this.CBFriction.Size = new System.Drawing.Size(22, 21);
       this.CBFriction.TabIndex = 1;
+      this.CBFriction.Tag = "Friction";
       this.CBFriction.UseVisualStyleBackColor = true;
       this.CBFriction.CheckedChanged += new System.EventHandler(this.FFB_CheckBox_CheckedChanged);
       // 
@@ -700,6 +702,7 @@ namespace DirectInputExplorer
       this.CBDamper.Name = "CBDamper";
       this.CBDamper.Size = new System.Drawing.Size(22, 21);
       this.CBDamper.TabIndex = 1;
+      this.CBDamper.Tag = "Damper";
       this.CBDamper.UseVisualStyleBackColor = true;
       this.CBDamper.CheckedChanged += new System.EventHandler(this.FFB_CheckBox_CheckedChanged);
       // 
@@ -741,6 +744,7 @@ namespace DirectInputExplorer
       this.CBConstantForce.Name = "CBConstantForce";
       this.CBConstantForce.Size = new System.Drawing.Size(22, 21);
       this.CBConstantForce.TabIndex = 1;
+      this.CBConstantForce.Tag = "ConstantForce";
       this.CBConstantForce.UseVisualStyleBackColor = true;
       this.CBConstantForce.CheckedChanged += new System.EventHandler(this.FFB_CheckBox_CheckedChanged);
       // 
