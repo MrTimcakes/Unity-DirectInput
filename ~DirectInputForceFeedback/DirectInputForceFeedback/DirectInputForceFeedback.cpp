@@ -2,11 +2,12 @@
 #include "pch.h"
 #include "DirectInputForceFeedback.h"
 
-
-std::vector<DeviceInfo> _DeviceInstances;
-
-std::map<std::string, LPDIRECTINPUTDEVICE8> _ActiveDevices; // Store all of the connected devices
-std::map<std::string, std::vector<DIEFFECTINFO>> _DeviceEnumeratedEffects;
+std::vector<DeviceInfo>                                             _DeviceInstances;         // Store devices available for connection
+std::map<std::string, LPDIRECTINPUTDEVICE8>                         _ActiveDevices;           // Store all of the connected devices
+std::map<std::string, std::vector<DIEFFECTINFO>>                    _DeviceEnumeratedEffects; // Store the available FFB Effects for devices
+std::map<std::string, std::vector<DIDEVICEOBJECTINSTANCE>>          _DeviceFFBAxes;           // Store the Axes available for FFB
+std::map<std::string, std::map<Effects::Type, DIEFFECT>>            _DeviceFFBEffectConfig;   // Effect Configuration
+std::map<std::string, std::map<Effects::Type, LPDIRECTINPUTEFFECT>> _DeviceFFBEffectControl;  // Handle to Start/Stop Effect
 
 //////////////////////////////////////////////////////////////
 // DLL Exported Functions
@@ -25,19 +26,19 @@ HRESULT StartDirectInput() {
 }
 
 // Return a vector of all attached devices
-DeviceInfo* EnumerateDevices(int& deviceCount) {
+DeviceInfo* EnumerateDevices(/*[out]*/ int& deviceCount) {
   if (_DirectInput == NULL) { return NULL; } // If DI not ready, return nothing
-  _DeviceInstances.clear(); // Clear devices
-  HRESULT hr = _DirectInput->EnumDevices( // Invoke device enumeration to the _EnumDevicesCallback callback
-    DI8DEVCLASS_GAMECTRL, // List devices of type GameController
+  _DeviceInstances.clear();                  // Clear devices
+  HRESULT hr = _DirectInput->EnumDevices(    // Invoke device enumeration to the _EnumDevicesCallback callback
+    DI8DEVCLASS_GAMECTRL,                    // List devices of type GameController
     _EnumDevicesCallback,
-    NULL, // Passed to callback as optional arg
+    NULL,                                    // Passed to callback as optional arg
     DIEDFL_ATTACHEDONLY //| DIEDFL_FORCEFEEDBACK
   );
 
   if (_DeviceInstances.size() > 0) {
     deviceCount = (int)_DeviceInstances.size();
-    return &_DeviceInstances[0];
+    return &_DeviceInstances[0]; // Return 1st element, structure size & deviceCount are used to find next elements
   } else {
     deviceCount = 0;
   }
@@ -47,23 +48,19 @@ DeviceInfo* EnumerateDevices(int& deviceCount) {
 // Create the DirectInput Device and Acquire ready for State retreval & FFB Effects (Requires Cooperation level Exclusive)
 // Pass the GUID (as a string) of the Device you'd like to attach to, GUID obtained from the Enumerated Devices 
 HRESULT CreateDevice(LPCSTR guidInstance) {
+  HRESULT hr;
   DestroyDeviceIfExists(guidInstance); // If device exists, clear it first
 
-
   LPDIRECTINPUTDEVICE8 DIDevice;
-
-  HRESULT hr;
-  HWND hWnd = FindMainWindow(GetCurrentProcessId());
-
   if (FAILED(hr = _DirectInput->CreateDevice(LPCSTRGUIDtoGUID(guidInstance), &DIDevice, NULL))) { return hr; }
   if (FAILED(hr = DIDevice->SetDataFormat(&c_dfDIJoystick2))) { return hr; }
-  if (FAILED(hr = DIDevice->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND))) { return hr; }
+  if (FAILED(hr = DIDevice->SetCooperativeLevel(FindMainWindow(GetCurrentProcessId()), DISCL_EXCLUSIVE | DISCL_BACKGROUND))) { return hr; }
   if (FAILED(hr = DIDevice->Acquire())) { return hr; }
 
   std::string GUIDString((LPCSTR)guidInstance); // Convert the LPCSTR to a STL String for use as key in map (String as GUID has no operater<)
-  _ActiveDevices[GUIDString] = DIDevice;
+  _ActiveDevices[GUIDString] = DIDevice; // Store Device in _ActiveDevices Map to be referenced later
 
-  return S_OK;
+  return hr;
 }
 
 // Remove the DirectInput Device, Unacquire and remove from ActiveDevices
@@ -127,41 +124,6 @@ HRESULT GetActiveDevices(/*[out]*/ SAFEARRAY** activeGUIDs){
   return hr;
 }
 
-// 
-HRESULT CreateFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
-  HRESULT hr = E_FAIL;
-  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
-
-  // Create that FFB Effect
-
-  // Set Cooperation level to exclusive
-  //HWND hWnd = FindMainWindow(GetCurrentProcessId());
-  //if (FAILED(hr = Device->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND))) { return hr; } // DISCL_EXCLUSIVE is required for FFB
-
-  // Check for existing events
-  // Enumerate Axis?
-
-
-  //An array of axes that will be involved in the effect.For a joystick, this array normally consists of the identifiers for the x - axis and the y - axis.
-  //An array of values for setting the direction.The values differ according to both the number of axesand whether you want to use polar, spherical, or Cartesian coordinates.For a full explanation, see Effect Direction.
-  //A structure of type - specific parameters.In the example, because you are creating a periodic effect, this is of type DIPERIODIC.
-  //A DIENVELOPE structure for defining an envelope to be applied to the effect.
-  //A DIEFFECT structure to contain the basic parameters for the effect.
-      
-
-
-  return hr;
-}
-
-HRESULT DestroyFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
-  HRESULT hr = E_FAIL;
-  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
-
-  // Destroy Effect
-
-  return hr;
-}
-
 // Set the Autocenter property for a DI device, pass device GUID and bool to enable or disable
 HRESULT SetAutocenter(LPCSTR guidInstance, bool AutocenterState) {
   HRESULT hr = E_FAIL;
@@ -185,7 +147,7 @@ HRESULT EnumerateFFBEffects(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBEffect
   std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
 
   _DeviceEnumeratedEffects[GUIDString].clear(); // Clear effects for this device
-  hr = _ActiveDevices[GUIDString]->EnumEffects(&_EnumFFBEffectsCallbackMap, &GUIDString, DIEFT_ALL); // Callback adds each effect to _DeviceEnumeratedEffects with key as device's GUID
+  hr = _ActiveDevices[GUIDString]->EnumEffects(&_EnumFFBEffectsCallback, &GUIDString, DIEFT_ALL); // Callback adds each effect to _DeviceEnumeratedEffects with key as device's GUID
 
   // Generate SafeArray of supported effects
   std::vector<std::wstring> SAData; // Store what will be in the SafeArray
@@ -197,26 +159,172 @@ HRESULT EnumerateFFBEffects(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBEffect
   return hr;
 }
 
+// Generate SAFEARRAY of possible FFB Effects for this Device
+HRESULT EnumerateFFBAxes(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBAxes) {
+  HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
+
+  _DeviceFFBAxes[GUIDString].clear(); // Clear Axes info for this device
+  hr = _ActiveDevices[GUIDString]->EnumObjects(&_EnumFFBAxisCallback, &GUIDString, DIEFT_ALL); // Callback adds each effect to _DeviceFFBAxes with key as device's GUID
+
+  // Generate SafeArray of FFB Axes
+  std::vector<std::wstring> SAData; // Store what will be in the SafeArray
+  SAData.push_back(L"FFB Axes: " + std::to_wstring(_DeviceFFBAxes.size()));
+  for (const auto& ObjectInst : _DeviceFFBAxes[GUIDString]) {
+
+    wchar_t szGUID[64] = { 0 };
+    StringFromGUID2(ObjectInst.guidType, szGUID, 64);
+    std::wstring guidType(szGUID);
+
+    SAData.push_back(ObjectInst.tszName); // Add each effect name
+    SAData.push_back(L"dwSize: "              + std::to_wstring(ObjectInst.dwSize));
+    SAData.push_back(L"guidType: "            + guidType);
+    SAData.push_back(L"dwOfs: "               + std::to_wstring(ObjectInst.dwOfs));
+    SAData.push_back(L"dwType: "              + std::to_wstring(ObjectInst.dwType));
+    SAData.push_back(L"dwFlags: "             + std::to_wstring(ObjectInst.dwFlags));
+    //SAData.push_back(L"tszName: "             + std::to_wstring(ObjectInst.tszName));
+    SAData.push_back(L"dwFFMaxForce: "        + std::to_wstring(ObjectInst.dwFFMaxForce));
+    SAData.push_back(L"dwFFForceResolution: " + std::to_wstring(ObjectInst.dwFFForceResolution));
+    SAData.push_back(L"wCollectionNumber: "   + std::to_wstring(ObjectInst.wCollectionNumber));
+    SAData.push_back(L"wDesignatorIndex: "    + std::to_wstring(ObjectInst.wDesignatorIndex));
+    SAData.push_back(L"wUsagePage: "          + std::to_wstring(ObjectInst.wUsagePage));
+    SAData.push_back(L"wUsage: "              + std::to_wstring(ObjectInst.wUsage));
+    SAData.push_back(L"dwDimension: "         + std::to_wstring(ObjectInst.dwDimension));
+    SAData.push_back(L"wExponent: "           + std::to_wstring(ObjectInst.wExponent));
+    SAData.push_back(L"wReportId: "           + std::to_wstring(ObjectInst.wReportId));
+    SAData.push_back(L"-");
+  }
+  hr = BuildSafeArray(SAData, FFBAxes);
+
+  return hr;
+}
+
+// 
+// Should take Axes too?
+//
+HRESULT CreateFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
+  HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
+
+  if (_DeviceFFBEffectControl[GUIDString].contains(effectType)) { return E_ABORT; } // Effect Already Exists on Device
+  
+  //Enumerate FFBAxes if not already
+  if (!_DeviceFFBAxes.contains(GUIDString)) {
+    _DeviceFFBAxes[GUIDString].clear(); // Clear Axes info for this device
+    hr = _ActiveDevices[GUIDString]->EnumObjects(&_EnumFFBAxisCallback, &GUIDString, DIEFT_ALL); // Callback adds each effect to _DeviceFFBAxes with key as device's GUID
+  }
+
+
+
+  int FFBAxesCount = _DeviceFFBAxes[GUIDString].size();
+  DWORD* FFBAxes = new DWORD[FFBAxesCount];
+  LONG* FFBDirections = new LONG[FFBAxesCount];
+
+  for (int idx = 0; idx < FFBAxesCount; idx++) {
+    FFBAxes[idx] = AxisTypeToDIJOFS(_DeviceFFBAxes[GUIDString][idx].guidType); // FFB Axis GUID to DirectInput representation
+    FFBDirections[idx] = 0; // Init this axis
+  }
+
+  // Create the Effect
+
+  DICONSTANTFORCE* constantForce = NULL;
+  DICONDITION*     conditions = NULL;
+  DIEFFECT effect = {}; // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416616(v=vs.85)
+  effect.dwSize                  = sizeof(DIEFFECT);
+  effect.dwFlags                 = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
+  effect.dwDuration              = INFINITE;
+  effect.dwSamplePeriod          = 0;
+  effect.dwGain                  = DI_FFNOMINALMAX;
+  effect.dwTriggerButton         = DIEB_NOTRIGGER;     // Start effect without requiring a button press
+  effect.dwTriggerRepeatInterval = 0;
+  effect.cAxes                   = FFBAxesCount;       // How many Axes will the effect be on (cannot be changed once it has been set)
+  effect.rgdwAxes                = FFBAxes;            // Identifies the axes to which the effects will be applied (cannot be changed once it has been set)
+  effect.rglDirection            = FFBDirections;      // Distribution of effect strength between Axes?
+  effect.lpEnvelope              = 0;
+  effect.dwStartDelay            = 0;
+
+
+
+  switch (effectType) {
+    case Effects::Type::ConstantForce:
+      constantForce = new DICONSTANTFORCE();
+      constantForce->lMagnitude = 0;
+      effect.cbTypeSpecificParams = sizeof(DICONSTANTFORCE);
+      effect.lpvTypeSpecificParams = constantForce;
+      break;
+
+    case Effects::Type::Spring:
+      conditions = new DICONDITION[FFBAxesCount];
+      ZeroMemory(conditions, sizeof(DICONDITION) * FFBAxesCount);
+      effect.cbTypeSpecificParams = sizeof(DICONDITION) * FFBAxesCount;
+      effect.lpvTypeSpecificParams = conditions;
+      break;
+
+    case Effects::Type::Damper:
+      conditions = new DICONDITION[FFBAxesCount];
+      ZeroMemory(conditions, sizeof(DICONDITION) * FFBAxesCount);
+      effect.cbTypeSpecificParams = sizeof(DICONDITION) * FFBAxesCount;
+      effect.lpvTypeSpecificParams = conditions;
+      break;
+
+    case Effects::Type::Friction:
+      conditions = new DICONDITION[FFBAxesCount];
+      ZeroMemory(conditions, sizeof(DICONDITION) * FFBAxesCount);
+      effect.cbTypeSpecificParams = sizeof(DICONDITION) * FFBAxesCount;
+      effect.lpvTypeSpecificParams = conditions;
+      break;
+
+    case Effects::Type::Inertia:
+      conditions = new DICONDITION[FFBAxesCount];
+      ZeroMemory(conditions, sizeof(DICONDITION) * FFBAxesCount);
+      effect.cbTypeSpecificParams = sizeof(DICONDITION) * FFBAxesCount;
+      effect.lpvTypeSpecificParams = conditions;
+      break;
+
+    default:
+      return E_FAIL; // Unsupported Effect
+  }
+
+  LPDIRECTINPUTEFFECT EffectControl;
+  if (FAILED(hr = _ActiveDevices[GUIDString]->CreateEffect(EffectTypeToGUID(effectType), &effect, &EffectControl, nullptr))) { return hr; }
+  if (FAILED(hr = EffectControl->Start(1, 0))) { return hr; }
+  _DeviceFFBEffectConfig[GUIDString][effectType] = effect;
+  _DeviceFFBEffectControl[GUIDString][effectType] = EffectControl;
+  
+
+  // Set Cooperation level to exclusive
+  //HWND hWnd = FindMainWindow(GetCurrentProcessId());
+  //if (FAILED(hr = Device->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND))) { return hr; } // DISCL_EXCLUSIVE is required for FFB
+
+  return hr;
+}
+
+HRESULT DestroyFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
+  HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
+
+  // Destroy Effect
+  if (!_DeviceFFBEffectControl[GUIDString].contains(effectType)) { return E_ABORT; } // Effect doesn't exist
+
+  hr = _DeviceFFBEffectControl[GUIDString][effectType]->Stop(); // Stop Effect
+  _DeviceFFBEffectControl[GUIDString].erase(effectType);        // Remove Effect Control
+  _DeviceFFBEffectConfig[GUIDString].erase(effectType);         // Remove Effect Config
+
+  return hr;
+}
+
 // Generate SAFEARRAY of DEBUG data
 HRESULT DEBUG1(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** DebugData) {
   HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
+  std::vector<std::wstring> SAData;
 
-  std::string GUIDString((LPCSTR)guidInstance);
+  SAData.push_back(L"Modifying Constant Force!");
+  DICONSTANTFORCE CF = { 1000 };
+  _DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce].lpvTypeSpecificParams = &CF;
+  _DeviceFFBEffectControl[GUIDString][Effects::ConstantForce]->SetParameters(&_DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce], DIEP_TYPESPECIFICPARAMS);
 
-  std::wstring wGUIDString = string_to_wstring(GUIDString);
-
-  std::vector<std::wstring> sourceData;
-  //sourceData.push_back(L"WideStr");
-  sourceData.push_back(wGUIDString);
-  sourceData.push_back( std::to_wstring(_DeviceEnumeratedEffects.size()) );
-  sourceData.push_back( std::to_wstring(_DeviceEnumeratedEffects[GUIDString].size()) );
-
-  for (const auto& Effect : _DeviceEnumeratedEffects[GUIDString]) {
-    sourceData.push_back(Effect.tszName); // Add each effect name
-  }
-
-  hr = BuildSafeArray(sourceData, DebugData);
-
+  hr = BuildSafeArray(SAData, DebugData);
   return hr;
 }
 
@@ -255,10 +363,20 @@ BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* pInst, void* pContext
   return true;
 }
 
-BOOL CALLBACK _EnumFFBEffectsCallbackMap(LPCDIEFFECTINFO pdei, LPVOID pvRef) {
+BOOL CALLBACK _EnumFFBEffectsCallback(LPCDIEFFECTINFO EffectInfo, LPVOID pvRef) {
   std::string GUIDString = *reinterpret_cast<std::string*>(pvRef); // Device GUID passed in as 2nd arg
-  _DeviceEnumeratedEffects[GUIDString].push_back(*pdei); // Add the DIEffectInfo to the entry for this Device
+  _DeviceEnumeratedEffects[GUIDString].push_back(*EffectInfo); // Add the DIEffectInfo to the entry for this Device
   return DIENUM_CONTINUE; // Continue to next effect
+}
+
+BOOL CALLBACK _EnumFFBAxisCallback(const DIDEVICEOBJECTINSTANCE* ObjectInst, LPVOID pvRef) {
+  std::string GUIDString = *reinterpret_cast<std::string*>(pvRef); // Device GUID passed in as 2nd arg
+
+  if ((ObjectInst->dwFlags & DIDOI_FFACTUATOR) != 0) { // FFB Axis
+    _DeviceFFBAxes[GUIDString].push_back(*ObjectInst); // Add this ObjectIntance to the vector for this Device
+  }
+
+  return DIENUM_CONTINUE;
 }
 
 //////////////////////////////////////////////////////////////
@@ -436,4 +554,75 @@ inline CComBSTR ToBstr(const std::wstring& s) {
 void DestroyDeviceIfExists(LPCSTR guidInstance) {
   std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return; // Device not attached, fail
   DestroyDevice(guidInstance);
+}
+
+DWORD AxisTypeToDIJOFS(GUID axisType) {
+  if (axisType == GUID_XAxis) {
+    return DIJOFS_X;
+  } else if (axisType == GUID_YAxis) {
+    return DIJOFS_Y;
+  } else if (axisType == GUID_ZAxis) {
+    return DIJOFS_Z;
+  } else if (axisType == GUID_RxAxis) {
+    return DIJOFS_RX;
+  } else if (axisType == GUID_RyAxis) {
+    return DIJOFS_RY;
+  } else if (axisType == GUID_RzAxis) { 
+    return DIJOFS_RZ; 
+  } /*else if (axisType == GUID_Slider) {
+    return DIJOFS_SLIDER;
+  } else if (axisType == GUID_Button) {
+    return DIJOFS_BUTTON1;
+  } else if (axisType == GUID_Key) {
+    return DIJOFS_;
+  } else if (axisType == GUID_POV) {
+    return DIJOFS_POV;
+  } else if (AxesType == GUID_Unknown) {
+    return DIJOFS_;
+  }*/
+
+  return 0; // GUID Type not found, likely POV Hat, Slider or Button
+}
+
+GUID EffectTypeToGUID(Effects::Type effectType) {
+  switch (effectType) {
+    case Effects::Type::ConstantForce:
+      return GUID_ConstantForce;
+      break;
+    case Effects::Type::RampForce:
+      return GUID_RampForce;
+      break;
+    case Effects::Type::Square:
+      return GUID_Square;
+      break;
+    case Effects::Type::Sine:
+      return GUID_Sine;
+      break;
+    case Effects::Type::Triangle:
+      return GUID_Triangle;
+      break;
+    case Effects::Type::SawtoothUp:
+      return GUID_SawtoothUp;
+      break;
+    case Effects::Type::SawtoothDown:
+      return GUID_SawtoothDown;
+      break;
+    case Effects::Type::Spring:
+      return GUID_Spring;
+      break;
+    case Effects::Type::Damper:
+      return GUID_Damper;
+      break;
+    case Effects::Type::Inertia:
+      return GUID_Inertia;
+      break;
+    case Effects::Type::Friction:
+      return GUID_Friction;
+      break;
+    case Effects::Type::CustomForce:
+      return GUID_CustomForce;
+      break;
+    default:
+      return GUID_Unknown;
+  }
 }

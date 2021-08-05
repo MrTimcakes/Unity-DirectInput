@@ -79,16 +79,19 @@ extern "C" { // Everything to be made available by the DLL
   // DLL Functions
   //////////////////////////////////////////////////////////////
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              StartDirectInput();
-	DIRECTINPUTFORCEFEEDBACK_API DeviceInfo*          EnumerateDevices(int& deviceCount);
+	DIRECTINPUTFORCEFEEDBACK_API DeviceInfo*          EnumerateDevices(/*[out]*/ int& deviceCount);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              CreateDevice(LPCSTR guidInstance);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              DestroyDevice(LPCSTR guidInstance);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceState(LPCSTR guidInstance, /*[out]*/ FlatJoyState2& deviceState);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceStateRaw(LPCSTR guidInstance, /*[out]*/ DIJOYSTATE2& deviceState);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceCapabilities(LPCSTR guidInstance, /*[out]*/ DIDEVCAPS& deviceCapabilitiesOut);
-  DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetActiveDevices( /*[out]*/ SAFEARRAY** activeGUIDs);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetActiveDevices(/*[out]*/ SAFEARRAY** activeGUIDs);
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              SetAutocenter(LPCSTR guidInstance, bool AutocenterState);
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              EnumerateFFBEffects(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBEffects);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              EnumerateFFBAxes(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBAxis);
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              CreateFFBEffect(LPCSTR guidInstance, Effects::Type effectType);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              DestroyFFBEffect(LPCSTR guidInstance, Effects::Type effectType);
+
 
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              DEBUG1(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** DebugData);
 }
@@ -99,7 +102,8 @@ extern "C" { // Everything to be made available by the DLL
 //////////////////////////////////////////////////////////////
 BOOL CALLBACK _EnumWindowsCallback(HWND handle, LPARAM lParam);
 BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* pInst, void* pContext);
-BOOL CALLBACK _EnumFFBEffectsCallbackMap(LPCDIEFFECTINFO pdei, LPVOID pvRef);
+BOOL CALLBACK _EnumFFBEffectsCallback(LPCDIEFFECTINFO pdei, LPVOID pvRef);
+BOOL CALLBACK _EnumFFBAxisCallback(const DIDEVICEOBJECTINSTANCE* pdidoi, LPVOID pvRef);
 
 //////////////////////////////////////////////////////////////
 // Helper Functions
@@ -121,3 +125,5 @@ GUID Device2GUID(LPDIRECTINPUTDEVICE8 Device);
 inline CComBSTR ToBstr(const std::wstring& s);
 void DestroyDeviceIfExists(LPCSTR guidInstance);
 HRESULT BuildSafeArray(std::vector<std::wstring> sourceData, /*[out]*/ SAFEARRAY** SafeArrayData);
+DWORD AxisTypeToDIJOFS(GUID axisType);
+GUID EffectTypeToGUID(Effects::Type effectType);
