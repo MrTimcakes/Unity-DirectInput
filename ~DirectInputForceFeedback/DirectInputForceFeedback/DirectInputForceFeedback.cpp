@@ -285,16 +285,11 @@ HRESULT CreateFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
       return E_FAIL; // Unsupported Effect
   }
 
-  LPDIRECTINPUTEFFECT EffectControl;
-  if (FAILED(hr = _ActiveDevices[GUIDString]->CreateEffect(EffectTypeToGUID(effectType), &effect, &EffectControl, nullptr))) { return hr; }
-  if (FAILED(hr = EffectControl->Start(1, 0))) { return hr; }
-  _DeviceFFBEffectConfig[GUIDString][effectType] = effect;
-  _DeviceFFBEffectControl[GUIDString][effectType] = EffectControl;
-  
-
-  // Set Cooperation level to exclusive
-  //HWND hWnd = FindMainWindow(GetCurrentProcessId());
-  //if (FAILED(hr = Device->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND))) { return hr; } // DISCL_EXCLUSIVE is required for FFB
+  LPDIRECTINPUTEFFECT effectControl;
+  if (FAILED(hr = _ActiveDevices[GUIDString]->CreateEffect(EffectTypeToGUID(effectType), &effect, &effectControl, nullptr))) { return hr; }
+  if (FAILED(hr = effectControl->Start(1, 0))) { return hr; }
+  _DeviceFFBEffectConfig[GUIDString][effectType]  = effect;
+  _DeviceFFBEffectControl[GUIDString][effectType] = effectControl;
 
   return hr;
 }
@@ -310,6 +305,32 @@ HRESULT DestroyFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
   _DeviceFFBEffectControl[GUIDString].erase(effectType);        // Remove Effect Control
   _DeviceFFBEffectConfig[GUIDString].erase(effectType);         // Remove Effect Config
 
+  return hr;
+}
+
+HRESULT UpdateFFBEffect(LPCSTR guidInstance, Effects::Type effectType, DICONDITION* conditions) {
+  HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
+  if (!_DeviceFFBEffectControl[GUIDString].contains(effectType)) { return E_ABORT; } // Effect doesn't exist
+
+  for (int idx = 0; idx < _DeviceFFBEffectConfig[GUIDString][effectType].cAxes; idx++) { // For each Axis in this effect
+    switch (effectType) {
+      case Effects::ConstantForce:
+        DICONSTANTFORCE CF = *reinterpret_cast<DICONSTANTFORCE*>(_DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce].lpvTypeSpecificParams);
+        CF.lMagnitude = conditions[idx].lPositiveCoefficient;
+        _DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce].lpvTypeSpecificParams = &CF;
+        break;
+      default:
+        ((DICONDITION*)_DeviceFFBEffectConfig[GUIDString][effectType].lpvTypeSpecificParams)[idx].lOffset = conditions->lOffset;
+        ((DICONDITION*)_DeviceFFBEffectConfig[GUIDString][effectType].lpvTypeSpecificParams)[idx].lPositiveCoefficient = conditions[idx].lPositiveCoefficient;
+        ((DICONDITION*)_DeviceFFBEffectConfig[GUIDString][effectType].lpvTypeSpecificParams)[idx].lNegativeCoefficient = conditions[idx].lNegativeCoefficient;
+        ((DICONDITION*)_DeviceFFBEffectConfig[GUIDString][effectType].lpvTypeSpecificParams)[idx].dwPositiveSaturation = conditions[idx].dwPositiveSaturation;
+        ((DICONDITION*)_DeviceFFBEffectConfig[GUIDString][effectType].lpvTypeSpecificParams)[idx].dwNegativeSaturation = conditions[idx].dwNegativeSaturation;
+        ((DICONDITION*)_DeviceFFBEffectConfig[GUIDString][effectType].lpvTypeSpecificParams)[idx].lDeadBand = conditions[idx].lDeadBand;
+        break;
+    }
+  }
+  hr = _DeviceFFBEffectControl[GUIDString][effectType]->SetParameters(&_DeviceFFBEffectConfig[GUIDString][effectType], DIEP_TYPESPECIFICPARAMS);
   return hr;
 }
 
