@@ -4,7 +4,13 @@ using System.Runtime.InteropServices;
 
 namespace DirectInputManager {
   class Native {
-    const string DLLFile = @"..\..\..\..\..\~DirectInputForceFeedback\x64\Release\DirectInputForceFeedback.dll";
+    //const string DLLFile = @"..\..\..\..\..\~DirectInputForceFeedback\x64\Release\DirectInputForceFeedback.dll";
+#if UNITY_STANDALONE_WIN
+    const string DLLFile = @"DirectInputForceFeedback.dll";
+#else
+    const string DLLFile = @"..\..\..\..\..\Plugin\DLL\DirectInputForceFeedback.dll";
+#endif
+
     [DllImport(DLLFile)] public static extern int StartDirectInput();
     [DllImport(DLLFile)] public static extern IntPtr EnumerateDevices(out int deviceCount);
     [DllImport(DLLFile)] public static extern int CreateDevice(string guidInstance);
@@ -328,7 +334,7 @@ namespace DirectInputManager {
   /// Taken from: https://stackoverflow.com/a/21174331/9053848
   /// </summary>
   public static class WinErrors {
-    #region definitions
+#region definitions
     [DllImport("kernel32.dll", SetLastError = true)]
     static extern IntPtr LocalFree(IntPtr hMem);
 
@@ -344,7 +350,7 @@ namespace DirectInputManager {
       FORMAT_MESSAGE_FROM_HMODULE = 0x00000800,
       FORMAT_MESSAGE_FROM_STRING = 0x00000400,
     }
-    #endregion
+#endregion
 
     /// <summary>
     /// Gets a user friendly string message for a system error code
