@@ -319,15 +319,15 @@ namespace DirectInputExplorer
             0,
             0,
             0});
-      this.UDSpringSaturation.Minimum = new decimal(new int[] {
-            10000,
-            0,
-            0,
-            -2147483648});
       this.UDSpringSaturation.Name = "UDSpringSaturation";
       this.UDSpringSaturation.Size = new System.Drawing.Size(96, 31);
       this.UDSpringSaturation.TabIndex = 2;
       this.UDSpringSaturation.Tag = "SpringSaturation";
+      this.UDSpringSaturation.Value = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            0});
       this.UDSpringSaturation.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
       // 
       // UDSpringCoefficient
@@ -388,7 +388,6 @@ namespace DirectInputExplorer
       this.SliderSpringDeadband.LargeChange = 50;
       this.SliderSpringDeadband.Location = new System.Drawing.Point(108, 141);
       this.SliderSpringDeadband.Maximum = 10000;
-      this.SliderSpringDeadband.Minimum = -10000;
       this.SliderSpringDeadband.Name = "SliderSpringDeadband";
       this.SliderSpringDeadband.Size = new System.Drawing.Size(998, 31);
       this.SliderSpringDeadband.TabIndex = 0;
@@ -415,12 +414,12 @@ namespace DirectInputExplorer
       this.SliderSpringSaturation.LargeChange = 50;
       this.SliderSpringSaturation.Location = new System.Drawing.Point(108, 104);
       this.SliderSpringSaturation.Maximum = 10000;
-      this.SliderSpringSaturation.Minimum = -10000;
       this.SliderSpringSaturation.Name = "SliderSpringSaturation";
       this.SliderSpringSaturation.Size = new System.Drawing.Size(998, 31);
       this.SliderSpringSaturation.TabIndex = 0;
       this.SliderSpringSaturation.Tag = "SpringSaturation";
       this.SliderSpringSaturation.TickStyle = System.Windows.Forms.TickStyle.None;
+      this.SliderSpringSaturation.Value = 5000;
       this.SliderSpringSaturation.Scroll += new System.EventHandler(this.FFB_Slider_Scroll);
       // 
       // LabelSpringSaturation
