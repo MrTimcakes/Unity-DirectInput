@@ -17,6 +17,7 @@ namespace DirectInputManager {
     [DllImport(DLLFile)] public static extern int EnumerateFFBAxis(string guidInstance, [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] SupportedFFBAxis);
     [DllImport(DLLFile)] public static extern int CreateFFBEffect(string guidInstance, EffectsType effectsType);
     [DllImport(DLLFile)] public static extern int DestroyFFBEffect(string guidInstance, EffectsType effectsType);
+    [DllImport(DLLFile)] public static extern int UpdateFFBEffect(string guidInstance, EffectsType effectsType, DICondition[] conditions);
     [DllImport(DLLFile)] public static extern int DEBUG1(string guidInstance, [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] DEBUGDATA);
   }
   class DIManager {
@@ -158,12 +159,168 @@ namespace DirectInputManager {
 
     public static string[] DEBUG1(DeviceInfo device) {
       string[] DEBUGDATA = null;
+      DEBUGDATA = new string[1] { "Test" };
       int hresult = Native.DEBUG1(device.guidInstance, out DEBUGDATA);
       if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] DEBUG1 Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
 
       return DEBUGDATA;
     }
 
+    //////////////////////////////////////////////////////////////
+    // Effects
+    //////////////////////////////////////////////////////////////
+    ///
+
+    /// <summary>
+    /// Update existing effect with new DICONDITION array<br/><br/>
+    /// 
+    /// DICondition[DeviceFFBEffectAxesCount]:<br/><br/>
+    /// deadband: Inacive Zone [-10,000 - 10,000]<br/>
+    /// offset: Move Effect Center[-10,000 - 10,000]<br/>
+    /// negativeCoefficient: Negative of center coefficient [-10,000 - 10,000]<br/>
+    /// positiveCoefficient: Positive of center Coefficient [-10,000 - 10,000]<br/>
+    /// negativeSaturation: Negative of center saturation [0 - 10,000]<br/>
+    /// positiveSaturation: Positive of center saturation [0 - 10,000]<br/>
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateEffect(DeviceInfo device, DICondition[] conditions) {
+      for (int i = 0; i < conditions.Length; i++) {
+        conditions[i] = new DICondition();
+        conditions[i].deadband =            Math.Clamp(conditions[i].deadband,                 0, 10000);
+        conditions[i].offset =              Math.Clamp(conditions[i].offset,              -10000, 10000);
+        conditions[i].negativeCoefficient = Math.Clamp(conditions[i].negativeCoefficient, -10000, 10000);
+        conditions[i].positiveCoefficient = Math.Clamp(conditions[i].positiveCoefficient, -10000, 10000);
+        conditions[i].negativeSaturation =  Math.Clamp(conditions[i].negativeSaturation,       0, 10000);
+        conditions[i].positiveSaturation =  Math.Clamp(conditions[i].positiveSaturation,       0, 10000);
+      }
+
+      int hresult = Native.UpdateFFBEffect(device.guidInstance, EffectsType.Spring, conditions);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
+
+    /// <summary>
+    /// Magnitude: Strength of Force [-10,000 - 10,0000]
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateConstantForceSimple(DeviceInfo device, int Magnitude) {
+      DICondition[] conditions = new DICondition[1];
+      for (int i = 0; i < conditions.Length; i++) {
+        conditions[i] = new DICondition();
+        conditions[i].deadband = 0;
+        conditions[i].offset = 0;
+        conditions[i].negativeCoefficient = Math.Clamp(Magnitude, -10000, 10000);
+        conditions[i].positiveCoefficient = Math.Clamp(Magnitude, -10000, 10000);
+        conditions[i].negativeSaturation = 0;
+        conditions[i].positiveSaturation = 0;
+      }
+
+      int hresult = Native.UpdateFFBEffect(device.guidInstance, EffectsType.ConstantForce, conditions);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
+
+    /// <summary>
+    /// deadband: Inacive Zone [-10,000 - 10,000]<br/>
+    /// offset: Move Effect Center[-10,000 - 10,000]<br/>
+    /// negativeCoefficient: Negative of center coefficient [-10,000 - 10,000]<br/>
+    /// positiveCoefficient: Positive of center Coefficient [-10,000 - 10,000]<br/>
+    /// negativeSaturation: Negative of center saturation [0 - 10,000]<br/>
+    /// positiveSaturation: Positive of center saturation [0 - 10,000]<br/>
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateSpringSimple(DeviceInfo device, uint deadband, int offset, int negativeCoefficient, int positiveCoefficient, uint negativeSaturation, uint positiveSaturation) {
+      DICondition[] conditions = new DICondition[1];
+      for (int i = 0; i < conditions.Length; i++) {
+        conditions[i] = new DICondition();
+        conditions[i].deadband =            Math.Clamp(deadband,                 0, 10000);
+        conditions[i].offset =              Math.Clamp(offset,              -10000, 10000);
+        conditions[i].negativeCoefficient = Math.Clamp(negativeCoefficient, -10000, 10000);
+        conditions[i].positiveCoefficient = Math.Clamp(positiveCoefficient, -10000, 10000);
+        conditions[i].negativeSaturation =  Math.Clamp(negativeSaturation,       0, 10000);
+        conditions[i].positiveSaturation =  Math.Clamp(positiveSaturation,       0, 10000);
+      }
+
+      int hresult = Native.UpdateFFBEffect(device.guidInstance, EffectsType.Spring, conditions);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
+
+    /// <summary>
+    /// Magnitude: Strength of Force [-10,000 - 10,0000]
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateDamperSimple(DeviceInfo device, int Magnitude) {
+      DICondition[] conditions = new DICondition[1];
+      for (int i = 0; i < conditions.Length; i++) {
+        conditions[i] = new DICondition();
+        conditions[i].deadband = 0;
+        conditions[i].offset = 0;
+        conditions[i].negativeCoefficient = Math.Clamp(Magnitude, -10000, 10000);
+        conditions[i].positiveCoefficient = Math.Clamp(Magnitude, -10000, 10000);
+        conditions[i].negativeSaturation = 0;
+        conditions[i].positiveSaturation = 0;
+      }
+
+      int hresult = Native.UpdateFFBEffect(device.guidInstance, EffectsType.Damper, conditions);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
+
+
+    /// <summary>
+    /// Magnitude: Strength of Force [-10,000 - 10,0000]
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateFrictionSimple(DeviceInfo device, int Magnitude) {
+      DICondition[] conditions = new DICondition[1];
+      for (int i = 0; i < conditions.Length; i++) {
+        conditions[i] = new DICondition();
+        conditions[i].deadband = 0;
+        conditions[i].offset = 0;
+        conditions[i].negativeCoefficient = Math.Clamp(Magnitude, -10000, 10000);
+        conditions[i].positiveCoefficient = Math.Clamp(Magnitude, -10000, 10000);
+        conditions[i].negativeSaturation = 0;
+        conditions[i].positiveSaturation = 0;
+      }
+
+      int hresult = Native.UpdateFFBEffect(device.guidInstance, EffectsType.Friction, conditions);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
+
+    /// <summary>
+    /// Magnitude: Strength of Force [-10,000 - 10,0000]
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateInertiaSimple(DeviceInfo device, int Magnitude) {
+      DICondition[] conditions = new DICondition[1];
+      for (int i = 0; i < conditions.Length; i++) {
+        conditions[i] = new DICondition();
+        conditions[i].deadband = 0;
+        conditions[i].offset = 0;
+        conditions[i].negativeCoefficient = Math.Clamp(Magnitude, -10000, 10000);
+        conditions[i].positiveCoefficient = Math.Clamp(Magnitude, -10000, 10000);
+        conditions[i].negativeSaturation = 0;
+        conditions[i].positiveSaturation = 0;
+      }
+
+      int hresult = Native.UpdateFFBEffect(device.guidInstance, EffectsType.Inertia, conditions);
+      if (hresult != 0) { System.Diagnostics.Debug.WriteLine($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
   }
 
   /// <summary>
