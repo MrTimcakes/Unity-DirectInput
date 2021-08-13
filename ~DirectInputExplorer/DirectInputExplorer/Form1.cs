@@ -91,9 +91,16 @@ namespace DirectInputExplorer {
       Label TrigElement = (Label)sender;
       TrackBar TB = TrigElement.Parent.Controls.Find("Slider" + TrigElement.Tag, false).FirstOrDefault() as TrackBar;
       NumericUpDown UD = TrigElement.Parent.Controls.Find("UD" + TrigElement.Tag, false).FirstOrDefault() as NumericUpDown;
-
-      TB.Value = 0;
-      UD.Value = 0;
+      switch (TB.Tag) {
+        case string a when a.Contains("Saturation"): // Center Saturation to 5000
+          TB.Value = 5000;
+          UD.Value = 5000;
+          break;
+        default:
+          TB.Value = 0;
+          UD.Value = 0;
+          break;
+      }
     }
 
     private void FFB_Slider_Scroll(object sender, EventArgs e) {
@@ -105,10 +112,40 @@ namespace DirectInputExplorer {
     }
 
     private void FFB_UpDown_ValueChanged(object sender, EventArgs e) {
+      DeviceInfo ActiveDevice = DIManager.devices[ComboBoxDevices.SelectedIndex];
       NumericUpDown TrigElement = (NumericUpDown)sender;
       // Update slider(TrackBar)
       TrackBar TB = TrigElement.Parent.Controls.Find("Slider" + TrigElement.Tag, false).FirstOrDefault() as TrackBar;
       TB.Value = (int)TrigElement.Value;
+      // Update Effect
+      switch (TrigElement.Parent.Tag) {
+        case "ConstantForce":
+          DIManager.UpdateConstantForceSimple(ActiveDevice, (int)((TrigElement.Parent.Controls.Find("UDConstantForceMagnitude", false).FirstOrDefault() as NumericUpDown).Value));
+          break;
+        case "Spring":
+          DIManager.UpdateSpringSimple(ActiveDevice,
+            (uint)((TrigElement.Parent.Controls.Find("UDSpringDeadband", false).FirstOrDefault() as NumericUpDown).Value),
+            (int)((TrigElement.Parent.Controls.Find("UDSpringOffset", false).FirstOrDefault() as NumericUpDown).Value),
+            (int)((TrigElement.Parent.Controls.Find("UDSpringCoefficient", false).FirstOrDefault() as NumericUpDown).Value),
+            (int)((TrigElement.Parent.Controls.Find("UDSpringCoefficient", false).FirstOrDefault() as NumericUpDown).Value),
+            (uint)((TrigElement.Parent.Controls.Find("UDSpringSaturation", false).FirstOrDefault() as NumericUpDown).Value),
+            (uint)((TrigElement.Parent.Controls.Find("UDSpringSaturation", false).FirstOrDefault() as NumericUpDown).Value)
+          );
+          break;
+        case "Damper":
+          DIManager.UpdateDamperSimple(ActiveDevice, (int)((TrigElement.Parent.Controls.Find("UDDamperMagnitude", false).FirstOrDefault() as NumericUpDown).Value));
+          break;
+        case "Friction":
+          DIManager.UpdateFrictionSimple(ActiveDevice, (int)((TrigElement.Parent.Controls.Find("UDFrictionMagnitude", false).FirstOrDefault() as NumericUpDown).Value));
+          break;
+        case "Inertia":
+          DIManager.UpdateInertiaSimple(ActiveDevice, (int)((TrigElement.Parent.Controls.Find("UDInertiaMagnitude", false).FirstOrDefault() as NumericUpDown).Value));
+          break;
+        default:
+          break;
+
+      }
+      //System.Diagnostics.Debug.WriteLine("Changed: " + TrigElement.Parent.Tag);
     }
 
     //////////////////////////////////////////////////////////////
