@@ -31,27 +31,6 @@ namespace DirectInputManager {
     public string productName;
   }
 
-  [Serializable]
-  [StructLayout(LayoutKind.Sequential)]
-  public struct DeviceAxisInfo {
-    public uint offset;
-    public uint type;
-    public uint flags;
-    public uint ffMaxForce;
-    public uint ffForceResolution;
-    public uint collectionNumber;
-    public uint designatorIndex;
-    public uint usagePage;
-    public uint usage;
-    public uint dimension;
-    public uint exponent;
-    public uint reportId;
-    [MarshalAs(UnmanagedType.LPStr)]
-    public string guidType;
-    [MarshalAs(UnmanagedType.LPStr)]
-    public string name;
-  };
-
   /// <summary>
   /// See https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416601(v=vs.85)
   /// </summary>
@@ -99,7 +78,7 @@ namespace DirectInputManager {
     /// from 0 through 10,000. In other words, the condition is not active between
     /// lOffset minus lDeadBand and lOffset plus lDeadBand.
     /// </summary>
-    public int deadband;
+    public uint deadband; // Should be uint? (LONG in DICONDITION though not like dwPositiveSaturation )
   }
 
   /// <summary>
