@@ -18,3 +18,6 @@
 // ATL Includes
 #include <atlbase.h>    // For ATL::CComBSTR
 #include <atlsafe.h>    // For ATL::CComSafeArray
+
+
+//#include <dbt.h> // Device Change Events

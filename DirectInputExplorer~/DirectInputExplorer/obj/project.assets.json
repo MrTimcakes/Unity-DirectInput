@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Ducky\\Documents\\GitHub\\Unity-ForceFeedback\\~DirectInputExplorer\\DirectInputExplorer\\DirectInputExplorer.csproj",
+      "projectUniqueName": "C:\\Users\\Ducky\\Documents\\GitHub\\Unity-ForceFeedback\\DirectInputExplorer~\\DirectInputExplorer\\DirectInputExplorer.csproj",
       "projectName": "DirectInputExplorer",
-      "projectPath": "C:\\Users\\Ducky\\Documents\\GitHub\\Unity-ForceFeedback\\~DirectInputExplorer\\DirectInputExplorer\\DirectInputExplorer.csproj",
+      "projectPath": "C:\\Users\\Ducky\\Documents\\GitHub\\Unity-ForceFeedback\\DirectInputExplorer~\\DirectInputExplorer\\DirectInputExplorer.csproj",
       "packagesPath": "C:\\Users\\Ducky\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Ducky\\Documents\\GitHub\\Unity-ForceFeedback\\~DirectInputExplorer\\DirectInputExplorer\\obj\\",
+      "outputPath": "C:\\Users\\Ducky\\Documents\\GitHub\\Unity-ForceFeedback\\DirectInputExplorer~\\DirectInputExplorer\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Ducky\\AppData\\Roaming\\NuGet\\NuGet.Config",
