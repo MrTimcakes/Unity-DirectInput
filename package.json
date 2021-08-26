@@ -1,0 +1,32 @@
+{
+  "name": "com.mrtimcakes.directinput",
+  "displayName": "Unity DirectInput",
+  "version": "0.5.1",
+  "unity": "2021.1",
+  "description": "Unity Native Plugin to expose DirectX DirectInput & ForceFeedback",
+  "keywords": [
+    "direct",
+    "input",
+    "directinput",
+    "ffb",
+    "force",
+    "feedback",
+    "forcefeedback",
+    "steering",
+    "wheel",
+    "peripheral",
+    "joystick",
+    "sim",
+    "simracing",
+    "driving",
+    "flight",
+    "flightsim",
+    "gamepad"
+  ],
+  "type": "module",
+  "dependencies": {
+    "com.unity.inputsystem": "1.0.2"
+  },
+  "hideInEditor": false,
+  "unityRelease": "16f1"
+}
