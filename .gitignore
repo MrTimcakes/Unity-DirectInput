@@ -367,7 +367,7 @@ _pkginfo.txt
 # Others
 ClientBin/
 ~$*
-*~
+#*~ # Accidentally not commiting folders ending in "~" (used to make Unity ignore folder)
 *.dbmdl
 *.dbproj.schemaview
 *.jfm
