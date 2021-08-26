@@ -27,6 +27,10 @@ namespace DirectInputExplorer {
       (TabController.TabPages["TabMisc"] as TabPage).Enabled = true;
     }
 
+    private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+      DIManager.StopDirectInput();
+    }
+
     private void ButtonEnumerateDevices_Click(object sender, EventArgs e) {
       string ExistingGUID = ComboBoxDevices.SelectedIndex != -1 ? DIManager.devices[ComboBoxDevices.SelectedIndex].guidInstance : ""; // GUID if device selected, empty if not
       DIManager.EnumerateDevices(); // Fetch currently plugged in devices
@@ -55,7 +59,7 @@ namespace DirectInputExplorer {
 
     private void TimerPoll_Tick_1(object sender, EventArgs e) {
       // If device connected get data
-      if (DIManager.isDeviceActive(DIManager.devices[ComboBoxDevices.SelectedIndex])) { // Currently selected device is attached
+      if (DIManager.devices.Length != 0 && DIManager.isDeviceActive(DIManager.devices[ComboBoxDevices.SelectedIndex])) { // Currently selected device is attached
         FlatJoyState2 DeviceState = DIManager.GetDeviceState(DIManager.devices[ComboBoxDevices.SelectedIndex]);
         LabelInput.Text = $"buttonsA: {Convert.ToString((long)DeviceState.buttonsA, 2).PadLeft(64, '0')}\nbuttonsB: {Convert.ToString((long)DeviceState.buttonsB, 2).PadLeft(64, '0')}\nlX: {DeviceState.lX}\nlY: {DeviceState.lY}\nlZ: {DeviceState.lZ}\nlU: {DeviceState.lU}\nlV: {DeviceState.lV}\nlRx: {DeviceState.lRx}\nlRy: {DeviceState.lRy}\nlRz: {DeviceState.lRz}\nlVX: {DeviceState.lVX}\nlVY: {DeviceState.lVY}\nlVZ: {DeviceState.lVZ}\nlVU: {DeviceState.lVU}\nlVV: {DeviceState.lVV}\nlVRx: {DeviceState.lVRx}\nlVRy: {DeviceState.lVRy}\nlVRz: {DeviceState.lVRz}\nlAX: {DeviceState.lAX}\nlAY: {DeviceState.lAY}\nlAZ: {DeviceState.lAZ}\nlAU: {DeviceState.lAU}\nlAV: {DeviceState.lAV}\nlARx: {DeviceState.lARx}\nlARy: {DeviceState.lARy}\nlARz: {DeviceState.lARz}\nlFX: {DeviceState.lFX}\nlFY: {DeviceState.lFY}\nlFZ: {DeviceState.lFZ}\nlFU: {DeviceState.lFU}\nlFV: {DeviceState.lFV}\nlFRx: {DeviceState.lFRx}\nlFRy: {DeviceState.lFRy}\nlFRz: {DeviceState.lFRz}\nrgdwPOV: {Convert.ToString((long)DeviceState.rgdwPOV, 2).PadLeft(16, '0')}\n";
       }
@@ -67,7 +71,7 @@ namespace DirectInputExplorer {
 
     private void FFB_CheckBox_CheckedChanged(object sender, EventArgs e) {
       CheckBox TriggeringCheckBox = (CheckBox)sender;
-      EffectsType TriggeringEffectType = (EffectsType)Enum.Parse(typeof(EffectsType), TriggeringCheckBox.Tag.ToString());
+      FFBEffects TriggeringEffectType = (FFBEffects)Enum.Parse(typeof(FFBEffects), TriggeringCheckBox.Tag.ToString());
 
       if (TriggeringCheckBox.Checked) { // Enable the effect
         TriggeringCheckBox.Checked = DIManager.EnableFFBEffect(DIManager.devices[ComboBoxDevices.SelectedIndex], TriggeringEffectType); // If enable fails, checkbox will be unchecked
@@ -153,7 +157,7 @@ namespace DirectInputExplorer {
     //////////////////////////////////////////////////////////////
 
     private void UpdateReadoutsWithDeviceData(DeviceInfo Device) {
-      LabelDeviceInfo.Text = $"deviceType: {Device.deviceType}\nguidInstance: {Device.guidInstance}\nguidProduct: {Device.guidProduct}\ninstanceName: {Device.instanceName}\nproductName: {Device.productName}";
+      LabelDeviceInfo.Text = $"deviceType: {Device.deviceType}\nguidInstance: {Device.guidInstance}\nguidProduct: {Device.guidProduct}\ninstanceName: {Device.instanceName}\nFFBCapable: {Device.FFBCapable}";
 
       if (DIManager.isDeviceActive(DIManager.devices[ComboBoxDevices.SelectedIndex])) { // Currently selected device is attached
         (TabController.TabPages["TabInput"] as TabPage).Enabled = true; // Enable the Input Tab as we're connected
@@ -188,8 +192,11 @@ namespace DirectInputExplorer {
       //DIManager.EnableFFBEffect(DIManager.devices[ComboBoxDevices.SelectedIndex], EffectsType.ConstantForce);
 
       //LabelDebug.Text = string.Join("\n", DIManager.GetDeviceFFBCapabilities(DIManager.devices[ComboBoxDevices.SelectedIndex]));
-
-      LabelDebug.Text = string.Join("\n", DIManager.DEBUG1(DIManager.devices[ComboBoxDevices.SelectedIndex]));
+      var DebugData = DIManager.DEBUG1(DIManager.devices[ComboBoxDevices.SelectedIndex]);
+      var DoubleData = Array.ConvertAll(DebugData, Double.Parse);
+      LabelDebug.Text = string.Join("\n", DebugData);
+      System.Diagnostics.Debug.WriteLine($"Avg: {DoubleData.Average()}");
+      //LabelDebug.Text = string.Join("\n", DIManager.DEBUG1(DIManager.devices[ComboBoxDevices.SelectedIndex]));
     }
 
   }

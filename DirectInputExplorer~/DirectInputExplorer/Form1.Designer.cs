@@ -840,6 +840,7 @@ namespace DirectInputExplorer
       this.Controls.Add(this.ComboBoxDevices);
       this.Name = "Form1";
       this.Text = "Direct Input Explorer";
+      this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
       this.Load += new System.EventHandler(this.Form1_Load);
       this.TabController.ResumeLayout(false);
       this.TabDeviceInfo.ResumeLayout(false);

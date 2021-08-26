@@ -2,12 +2,18 @@
 #include "pch.h"
 #include "DirectInputForceFeedback.h"
 
-std::vector<DeviceInfo>                                             _DeviceInstances;         // Store devices available for connection
-std::map<std::string, LPDIRECTINPUTDEVICE8>                         _ActiveDevices;           // Store all of the connected devices
-std::map<std::string, std::vector<DIEFFECTINFO>>                    _DeviceEnumeratedEffects; // Store the available FFB Effects for devices
-std::map<std::string, std::vector<DIDEVICEOBJECTINSTANCE>>          _DeviceFFBAxes;           // Store the Axes available for FFB
-std::map<std::string, std::map<Effects::Type, DIEFFECT>>            _DeviceFFBEffectConfig;   // Effect Configuration
-std::map<std::string, std::map<Effects::Type, LPDIRECTINPUTEFFECT>> _DeviceFFBEffectControl;  // Handle to Start/Stop Effect
+typedef std::string DeviceGUID; // Alias to make it clearer what maps below use as key
+
+std::vector< DeviceInfo >                                               _DeviceInstances;         // Store devices available for connection
+std::map   < DeviceGUID, LPDIRECTINPUTDEVICE8 >                         _ActiveDevices;           // Store all of the connected devices
+std::map   < DeviceGUID, std::vector<DIEFFECTINFO> >                    _DeviceEnumeratedEffects; // Store the available FFB Effects for devices
+std::map   < DeviceGUID, std::vector<DIDEVICEOBJECTINSTANCE> >          _DeviceFFBAxes;           // Store the Axes available for FFB
+std::map   < DeviceGUID, std::map<Effects::Type, DIEFFECT> >            _DeviceFFBEffectConfig;   // Effect Configuration
+std::map   < DeviceGUID, std::map<Effects::Type, LPDIRECTINPUTEFFECT> > _DeviceFFBEffectControl;  // Handle to Start/Stop Effect
+
+DeviceChangeCallback _DeviceChangeCallback; // External function to invoke on device change
+
+std::vector<std::wstring> DEBUGDATA; // Used for Debugging during development
 
 //////////////////////////////////////////////////////////////
 // DLL Exported Functions
@@ -16,7 +22,11 @@ std::map<std::string, std::map<Effects::Type, LPDIRECTINPUTEFFECT>> _DeviceFFBEf
 // Create the _DirectInput global
 HRESULT StartDirectInput() {
   if (_DirectInput != NULL) { return S_OK; } // Already initialised
-  return DirectInput8Create(
+
+  // Setup Device Change Detection (Add/Remove Device Events)
+  SetWindowsHookExW(WH_CALLWNDPROC, (HOOKPROC)&_WindowsHookCallback, GetModuleHandleW(NULL), GetCurrentThreadId());
+
+  return DirectInput8Create( // Create DirectInput
     GetModuleHandle(NULL),
     DIRECTINPUT_VERSION,
     IID_IDirectInput8,
@@ -25,15 +35,52 @@ HRESULT StartDirectInput() {
   );
 }
 
+// Stop _DirectInput
+HRESULT StopDirectInput() {
+  HRESULT hr = E_FAIL;
+  if (_DirectInput == NULL) { return hr = S_OK; } // No DirectInput Instance
+
+  for (const auto& [GUIDString, Device] : _ActiveDevices) { // For each device
+    for (const auto& [effectType, effectControl] : _DeviceFFBEffectControl[GUIDString]) { // For each effect
+      if (FAILED(hr = _DeviceFFBEffectControl[GUIDString][effectType]->Stop())) { return hr; } // Stop Effect
+      _DeviceFFBEffectControl[GUIDString].erase(effectType);        // Remove Effect Control
+      _DeviceFFBEffectConfig[GUIDString].erase(effectType);         // Remove Effect Config
+    }
+    if (FAILED(hr = Device->Unacquire())) { return hr; }
+  }
+
+  _DeviceInstances.clear();
+  _ActiveDevices.clear();
+  _DeviceEnumeratedEffects.clear();
+  _DeviceFFBAxes.clear();
+  _DeviceFFBEffectConfig.clear();
+  _DeviceFFBEffectControl.clear();
+
+  _DirectInput = NULL;
+
+  return hr;
+}
+
 // Return a vector of all attached devices
 DeviceInfo* EnumerateDevices(/*[out]*/ int& deviceCount) {
+  HRESULT hr = E_FAIL;
   if (_DirectInput == NULL) { return NULL; } // If DI not ready, return nothing
   _DeviceInstances.clear();                  // Clear devices
-  HRESULT hr = _DirectInput->EnumDevices(    // Invoke device enumeration to the _EnumDevicesCallback callback
+
+  // First fetch all devices
+  hr = _DirectInput->EnumDevices(    // Invoke device enumeration to the _EnumDevicesCallback callback
     DI8DEVCLASS_GAMECTRL,                    // List devices of type GameController
-    _EnumDevicesCallback,
+    _EnumDevicesCallback,                    // Callback executed for each device found
     NULL,                                    // Passed to callback as optional arg
     DIEDFL_ATTACHEDONLY //| DIEDFL_FORCEFEEDBACK
+  );
+
+  // Next update FFB devices (Important this happens after as it modifies existing entries)
+  hr = _DirectInput->EnumDevices(    // Invoke device enumeration to the _EnumDevicesCallback callback
+    DI8DEVCLASS_GAMECTRL,                    // List devices of type GameController
+    _EnumDevicesCallbackFFB,                 // Callback executed for each device found
+    NULL,                                    // Passed to callback as optional arg
+    DIEDFL_ATTACHEDONLY | DIEDFL_FORCEFEEDBACK
   );
 
   if (_DeviceInstances.size() > 0) {
@@ -173,7 +220,7 @@ HRESULT EnumerateFFBAxes(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBAxes) {
   for (const auto& ObjectInst : _DeviceFFBAxes[GUIDString]) {
 
     wchar_t szGUID[64] = { 0 };
-    StringFromGUID2(ObjectInst.guidType, szGUID, 64);
+    (void)StringFromGUID2(ObjectInst.guidType, szGUID, 64); // Void cast ignores [[nodiscard]] warning
     std::wstring guidType(szGUID);
 
     SAData.push_back(ObjectInst.tszName); // Add each effect name
@@ -182,7 +229,6 @@ HRESULT EnumerateFFBAxes(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBAxes) {
     SAData.push_back(L"dwOfs: "               + std::to_wstring(ObjectInst.dwOfs));
     SAData.push_back(L"dwType: "              + std::to_wstring(ObjectInst.dwType));
     SAData.push_back(L"dwFlags: "             + std::to_wstring(ObjectInst.dwFlags));
-    //SAData.push_back(L"tszName: "             + std::to_wstring(ObjectInst.tszName));
     SAData.push_back(L"dwFFMaxForce: "        + std::to_wstring(ObjectInst.dwFFMaxForce));
     SAData.push_back(L"dwFFForceResolution: " + std::to_wstring(ObjectInst.dwFFForceResolution));
     SAData.push_back(L"wCollectionNumber: "   + std::to_wstring(ObjectInst.wCollectionNumber));
@@ -192,7 +238,6 @@ HRESULT EnumerateFFBAxes(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBAxes) {
     SAData.push_back(L"dwDimension: "         + std::to_wstring(ObjectInst.dwDimension));
     SAData.push_back(L"wExponent: "           + std::to_wstring(ObjectInst.wExponent));
     SAData.push_back(L"wReportId: "           + std::to_wstring(ObjectInst.wReportId));
-    SAData.push_back(L"-");
   }
   hr = BuildSafeArray(SAData, FFBAxes);
 
@@ -216,7 +261,7 @@ HRESULT CreateFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
 
 
 
-  int FFBAxesCount = _DeviceFFBAxes[GUIDString].size();
+  int FFBAxesCount = (int)_DeviceFFBAxes[GUIDString].size();
   DWORD* FFBAxes = new DWORD[FFBAxesCount];
   LONG* FFBDirections = new LONG[FFBAxesCount];
 
@@ -315,10 +360,10 @@ HRESULT UpdateFFBEffect(LPCSTR guidInstance, Effects::Type effectType, DICONDITI
 
   for (int idx = 0; idx < _DeviceFFBEffectConfig[GUIDString][effectType].cAxes; idx++) { // For each Axis in this effect
     switch (effectType) {
-      case Effects::ConstantForce:
-        DICONSTANTFORCE CF = *reinterpret_cast<DICONSTANTFORCE*>(_DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce].lpvTypeSpecificParams);
+      case Effects::Type::ConstantForce:
+        DICONSTANTFORCE CF = *reinterpret_cast<DICONSTANTFORCE*>(_DeviceFFBEffectConfig[GUIDString][Effects::Type::ConstantForce].lpvTypeSpecificParams);
         CF.lMagnitude = conditions[idx].lPositiveCoefficient;
-        _DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce].lpvTypeSpecificParams = &CF;
+        _DeviceFFBEffectConfig[GUIDString][Effects::Type::ConstantForce].lpvTypeSpecificParams = &CF;
         break;
       default:
         ((DICONDITION*)_DeviceFFBEffectConfig[GUIDString][effectType].lpvTypeSpecificParams)[idx].lOffset = conditions->lOffset;
@@ -334,18 +379,37 @@ HRESULT UpdateFFBEffect(LPCSTR guidInstance, Effects::Type effectType, DICONDITI
   return hr;
 }
 
+HRESULT StopAllFFBEffects(LPCSTR guidInstance) {
+  HRESULT hr = E_FAIL;
+  std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
+  hr = S_OK; // Incase there are no active effects, act like we stopped them all
+  for (const auto& [effectType, effectControl] : _DeviceFFBEffectControl[GUIDString]) { // For each effect
+    hr = _DeviceFFBEffectControl[GUIDString][effectType]->Stop(); // Stop Effect
+    _DeviceFFBEffectControl[GUIDString].erase(effectType);        // Remove Effect Control
+    _DeviceFFBEffectConfig[GUIDString].erase(effectType);         // Remove Effect Config
+  }
+
+  return hr;
+}
+
+void SetDeviceChangeCallback(DeviceChangeCallback CB) {
+  _DeviceChangeCallback = CB;
+}
+
 // Generate SAFEARRAY of DEBUG data
 HRESULT DEBUG1(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** DebugData) {
   HRESULT hr = E_FAIL;
   std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
-  std::vector<std::wstring> SAData;
 
-  SAData.push_back(L"Modifying Constant Force!");
-  DICONSTANTFORCE CF = { 1000 };
-  _DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce].lpvTypeSpecificParams = &CF;
-  _DeviceFFBEffectControl[GUIDString][Effects::ConstantForce]->SetParameters(&_DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce], DIEP_TYPESPECIFICPARAMS);
+  //std::vector<std::wstring> SAData;
 
-  hr = BuildSafeArray(SAData, DebugData);
+  //SAData.push_back(L"Modifying Constant Force!");
+  //DICONSTANTFORCE CF = { 1000 };
+  //_DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce].lpvTypeSpecificParams = &CF;
+  //_DeviceFFBEffectControl[GUIDString][Effects::ConstantForce]->SetParameters(&_DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce], DIEP_TYPESPECIFICPARAMS);
+  //hr = BuildSafeArray(SAData, DebugData);
+
+  hr = BuildSafeArray(DEBUGDATA, DebugData);
   return hr;
 }
 
@@ -355,33 +419,35 @@ HRESULT DEBUG1(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** DebugData) {
 //////////////////////////////////////////////////////////////
 
 // Callback for each device enumerated, each device is added to the _DeviceInstances vector
-BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* pInst, void* pContext) {
-  DeviceInfo di = { 0 };
-
-  OLECHAR* guidInstance;
-  StringFromCLSID(pInst->guidInstance, &guidInstance);
-  OLECHAR* guidProduct;
-  StringFromCLSID(pInst->guidProduct, &guidProduct);
-
-  std::string strGuidInstance = wstring_to_string(guidInstance);
-  std::string strGuidProduct = wstring_to_string(guidProduct);
-  std::string strInstanceName = wstring_to_string(pInst->tszInstanceName);
-  std::string strProductName = wstring_to_string(pInst->tszProductName);
-
-  di.guidInstance = new char[strGuidInstance.length() + 1];
-  di.guidProduct = new char[strGuidProduct.length() + 1];
-  di.instanceName = new char[strInstanceName.length() + 1];
-  di.productName = new char[strProductName.length() + 1];
-
-  di.deviceType = pInst->dwDevType;
-  strcpy_s(di.guidInstance, strGuidInstance.length() + 1, strGuidInstance.c_str());
-  strcpy_s(di.guidProduct, strGuidProduct.length() + 1, strGuidProduct.c_str());
-  strcpy_s(di.instanceName, strInstanceName.length() + 1, strInstanceName.c_str());
-  strcpy_s(di.productName, strProductName.length() + 1, strProductName.c_str());
-
+BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* DIDI, void* pContext) {
+  DeviceInfo di = { 0 }; // Store DeviceInfo
+  di.deviceType = DIDI->dwDevType;
+  std::string GIStr = (GUID_to_string(   DIDI->guidInstance   ).c_str());
+  std::string GPStr = (GUID_to_string(   DIDI->guidProduct    ).c_str());
+  std::string INStr = (wstring_to_string(DIDI->tszInstanceName).c_str());
+  std::string PNStr = (wstring_to_string(DIDI->tszProductName ).c_str());
+  di.guidInstance = new char[GIStr.length()+1];
+  di.guidProduct  = new char[GPStr.length()+1];
+  di.instanceName = new char[INStr.length()+1];
+  di.productName  = new char[PNStr.length()+1];
+  strcpy_s( di.guidInstance, GIStr.length()+1, GIStr.c_str() );
+  strcpy_s( di.guidProduct,  GPStr.length()+1, GPStr.c_str() );
+  strcpy_s( di.instanceName, INStr.length()+1, INStr.c_str() );
+  strcpy_s( di.productName,  PNStr.length()+1, PNStr.c_str() );
+  di.FFBCapable = false; // Default all devices to false, FFB devices are updated later
   _DeviceInstances.push_back(di);
+  return DIENUM_CONTINUE;
+}
 
-  return true;
+// Callback for each device enumerated, each device is added to the _DeviceInstances vector
+BOOL CALLBACK _EnumDevicesCallbackFFB(const DIDEVICEINSTANCE* DIDI, void* pContext) {
+  std::string GUIDStr = (GUID_to_string(DIDI->guidInstance).c_str()); // Convert GUID to str to compare against
+  for (auto& di : _DeviceInstances) {
+    if (di.guidInstance == GUIDStr) { // Update existing entry
+      di.FFBCapable = true;
+    }
+  }
+  return DIENUM_CONTINUE;
 }
 
 BOOL CALLBACK _EnumFFBEffectsCallback(LPCDIEFFECTINFO EffectInfo, LPVOID pvRef) {
@@ -398,6 +464,35 @@ BOOL CALLBACK _EnumFFBAxisCallback(const DIDEVICEOBJECTINSTANCE* ObjectInst, LPV
   }
 
   return DIENUM_CONTINUE;
+}
+
+LRESULT _WindowsHookCallback(int code, WPARAM wParam, LPARAM lParam) {
+  if (code < 0) return CallNextHookEx(NULL, code, wParam, lParam); // invalid code skip
+
+  // check if device was added/removed
+  PCWPSTRUCT pMsg = PCWPSTRUCT(lParam);
+  if (pMsg->message == WM_DEVICECHANGE) {
+    if (_DeviceChangeCallback) { _DeviceChangeCallback((int)pMsg->wParam); } // If callback assigned, invoke it
+    //switch (pMsg->wParam) {
+    //  case DBT_DEVNODES_CHANGED:
+    //    DEBUGDATA.push_back(L"Changed!");
+    //    // TODO: Invoke Callback
+    //    //if (_DeviceChangeCallback) { _DeviceChangeCallback(1); }
+    //    break;
+    //  case DBT_DEVICEARRIVAL:
+    //    DEBUGDATA.push_back(L"Arrival!");
+    //    // TODO: Invoke Callback
+    //    break;
+    //  case DBT_DEVICEREMOVECOMPLETE:
+    //    DEBUGDATA.push_back(L"Remove!");
+    //    // TODO: Invoke Callback
+    //    break;
+    //  default:
+    //    DEBUGDATA.push_back(L"Other!");
+    //    break;
+    //}
+  }
+  return CallNextHookEx(NULL, code, wParam, lParam); // Continue to next hook
 }
 
 //////////////////////////////////////////////////////////////
@@ -429,13 +524,6 @@ HRESULT BuildSafeArray(std::vector<std::wstring> sourceData, /*[out]*/ SAFEARRAY
 
 // Utilities for converting string types ( https://stackoverflow.com/a/3999597/3055031 )
 // Convert a wide Unicode string to an UTF8 string
-std::string wstring_to_string(const std::wstring& wstr){
-  if (wstr.empty()) return std::string();
-  int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
-  std::string strTo(size_needed, 0);
-  WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
-  return strTo;
-}
 
 // Convert an UTF8 string to a wide Unicode String
 std::wstring string_to_wstring(const std::string& str){
@@ -444,6 +532,21 @@ std::wstring string_to_wstring(const std::string& str){
   std::wstring wstrTo(size_needed, 0);
   MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
   return wstrTo;
+}
+
+std::string wstring_to_string(const std::wstring& wstr){
+  if (wstr.empty()) return std::string();
+  int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+  std::string strTo(size_needed, 0);
+  WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+  return strTo;
+}
+
+// Convert a GUID to a String
+std::string GUID_to_string(GUID guidInstance) {
+  OLECHAR* guidSTR;
+  (void)StringFromCLSID(guidInstance, &guidSTR);
+  return wstring_to_string(guidSTR);
 }
 
 // Return window handle for specified PID
@@ -476,7 +579,7 @@ GUID LPCSTRGUIDtoGUID(LPCSTR guidInstance) {
   int wcharCount = MultiByteToWideChar(CP_UTF8, 0, guidInstance, -1, NULL, 0);
   WCHAR* wstrGuidInstance = new WCHAR[wcharCount];
   MultiByteToWideChar(CP_UTF8, 0, guidInstance, -1, wstrGuidInstance, wcharCount);
-  CLSIDFromString(wstrGuidInstance, &deviceGuid);
+  (void)CLSIDFromString(wstrGuidInstance, &deviceGuid);
   delete[] wstrGuidInstance;
   return deviceGuid;
 }

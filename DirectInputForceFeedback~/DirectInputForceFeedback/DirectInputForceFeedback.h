@@ -16,50 +16,51 @@ extern "C" { // Everything to be made available by the DLL
 		LPSTR guidProduct;
 		LPSTR instanceName;
 		LPSTR productName;
+    bool FFBCapable;
 	};
 
   struct FlatJoyState2 {
-    long long buttonsA; // Buttons seperated into banks of 64-Bits to fit into 64-bit integer
-    long long buttonsB; // Buttons seperated into banks of 64-Bits to fit into 64-bit integer
-    long lX;       // X-axis
-    long lY;       // Y-axis
-    long lZ;       // Z-axis
-    long lU;       // U-axis
-    long lV;       // V-axis
-    long lRx;      // X-axis rotation
-    long lRy;      // Y-axis rotation
-    long lRz;      // Z-axis rotation
-    long lVX;      // X-axis velocity
-    long lVY;      // Y-axis velocity
-    long lVZ;      // Z-axis velocity
-    long lVU;      // U-axis velocity
-    long lVV;      // V-axis velocity
-    long lVRx;     // X-axis angular velocity
-    long lVRy;     // Y-axis angular velocity
-    long lVRz;     // Z-axis angular velocity
-    long lAX;      // X-axis acceleration
-    long lAY;      // Y-axis acceleration
-    long lAZ;      // Z-axis acceleration
-    long lAU;      // U-axis acceleration
-    long lAV;      // V-axis acceleration
-    long lARx;     // X-axis angular acceleration
-    long lARy;     // Y-axis angular acceleration
-    long lARz;     // Z-axis angular acceleration
-    long lFX;      // X-axis force
-    long lFY;      // Y-axis force
-    long lFZ;      // Z-axis force
-    long lFU;      // U-axis force
-    long lFV;      // V-axis force
-    long lFRx;     // X-axis torque
-    long lFRy;     // Y-axis torque
-    long lFRz;     // Z-axis torque
-    short rgdwPOV; // Store each DPAD in chunks of 4 bits inside 16-bit short     
+    uint64_t buttonsA; // Buttons seperated into banks of 64-Bits to fit into 64-bit integer
+    uint64_t buttonsB; // Buttons seperated into banks of 64-Bits to fit into 64-bit integer
+    uint16_t lX;       // X-axis
+    uint16_t lY;       // Y-axis
+    uint16_t lZ;       // Z-axis
+    uint16_t lU;       // U-axis
+    uint16_t lV;       // V-axis
+    uint16_t lRx;      // X-axis rotation
+    uint16_t lRy;      // Y-axis rotation
+    uint16_t lRz;      // Z-axis rotation
+    uint16_t lVX;      // X-axis velocity
+    uint16_t lVY;      // Y-axis velocity
+    uint16_t lVZ;      // Z-axis velocity
+    uint16_t lVU;      // U-axis velocity
+    uint16_t lVV;      // V-axis velocity
+    uint16_t lVRx;     // X-axis angular velocity
+    uint16_t lVRy;     // Y-axis angular velocity
+    uint16_t lVRz;     // Z-axis angular velocity
+    uint16_t lAX;      // X-axis acceleration
+    uint16_t lAY;      // Y-axis acceleration
+    uint16_t lAZ;      // Z-axis acceleration
+    uint16_t lAU;      // U-axis acceleration
+    uint16_t lAV;      // V-axis acceleration
+    uint16_t lARx;     // X-axis angular acceleration
+    uint16_t lARy;     // Y-axis angular acceleration
+    uint16_t lARz;     // Z-axis angular acceleration
+    uint16_t lFX;      // X-axis force
+    uint16_t lFY;      // Y-axis force
+    uint16_t lFZ;      // Z-axis force
+    uint16_t lFU;      // U-axis force
+    uint16_t lFV;      // V-axis force
+    uint16_t lFRx;     // X-axis torque
+    uint16_t lFRy;     // Y-axis torque
+    uint16_t lFRz;     // Z-axis torque
+    uint16_t rgdwPOV; // Store each DPAD in chunks of 4 bits inside 16-bit short     
   };
 
   struct DIDEVCAPS; // Transfer device capabilities across the interop boundary
 
   struct Effects {
-    typedef enum {
+    enum class Type {
       ConstantForce = 0,
       RampForce = 1,
       Square = 2,
@@ -72,13 +73,14 @@ extern "C" { // Everything to be made available by the DLL
       Inertia = 9,
       Friction = 10,
       CustomForce = 11
-    } Type;
+    };
   };
 
   //////////////////////////////////////////////////////////////
   // DLL Functions
   //////////////////////////////////////////////////////////////
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              StartDirectInput();
+	DIRECTINPUTFORCEFEEDBACK_API HRESULT              StopDirectInput();
 	DIRECTINPUTFORCEFEEDBACK_API DeviceInfo*          EnumerateDevices(/*[out]*/ int& deviceCount);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              CreateDevice(LPCSTR guidInstance);
 	DIRECTINPUTFORCEFEEDBACK_API HRESULT              DestroyDevice(LPCSTR guidInstance);
@@ -92,6 +94,10 @@ extern "C" { // Everything to be made available by the DLL
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              CreateFFBEffect(LPCSTR guidInstance, Effects::Type effectType);
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              DestroyFFBEffect(LPCSTR guidInstance, Effects::Type effectType);
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              UpdateFFBEffect(LPCSTR guidInstance, Effects::Type effectType, DICONDITION* conditions);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              StopAllFFBEffects(LPCSTR guidInstance);
+
+  typedef void(__stdcall* DeviceChangeCallback)(int);
+  DIRECTINPUTFORCEFEEDBACK_API void                 SetDeviceChangeCallback(DeviceChangeCallback CB);
 
 
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              DEBUG1(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** DebugData);
@@ -103,20 +109,23 @@ extern "C" { // Everything to be made available by the DLL
 //////////////////////////////////////////////////////////////
 BOOL CALLBACK _EnumWindowsCallback(HWND handle, LPARAM lParam);
 BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* pInst, void* pContext);
+BOOL CALLBACK _EnumDevicesCallbackFFB(const DIDEVICEINSTANCE* DIDI, void* pContext);
 BOOL CALLBACK _EnumFFBEffectsCallback(LPCDIEFFECTINFO pdei, LPVOID pvRef);
 BOOL CALLBACK _EnumFFBAxisCallback(const DIDEVICEOBJECTINSTANCE* pdidoi, LPVOID pvRef);
+LRESULT _WindowsHookCallback(int code, WPARAM wParam, LPARAM lParam);
 
 //////////////////////////////////////////////////////////////
 // Helper Functions
 //////////////////////////////////////////////////////////////
 
-struct WindowData {
+struct WindowData { // Used in FindMainWindow
 	unsigned long process_id;
 	HWND window_handle;
 };
 
 std::wstring string_to_wstring(const std::string& str);
 std::string wstring_to_string(const std::wstring& str);
+std::string GUID_to_string(GUID guidInstance);
 HWND FindMainWindow(unsigned long process_id);
 BOOL IsMainWindow(HWND handle);
 GUID LPCSTRGUIDtoGUID(LPCSTR guidInstance);
