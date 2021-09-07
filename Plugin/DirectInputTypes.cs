@@ -54,13 +54,17 @@ namespace DirectInputManager {
   }
 
   public delegate void deviceInfoEvent(DeviceInfo device); // delegate for handling events that pass DeviceInfo
+  public delegate void deviceStateEvent(DeviceInfo device, FlatJoyState2 state); // delegate for handling events that pass DeviceInfo & FlatJoyState2
   /// <summary>
   /// Like DeviceInfo but allows for events per device<br/>
   /// </summary>
   public class ActiveDeviceInfo{
-    public DeviceInfo deviceInfo;                 // Hold the info about the device
-    public event deviceInfoEvent OnDeviceRemoved; // Event to add listners too
-    public void DeviceRemoved(DeviceInfo device){ OnDeviceRemoved?.Invoke(device); } // Function to invoke event listeners
+    public DeviceInfo deviceInfo;                     // Hold the info about the device
+    public Int32 stateHash;                           // Hold the hash of the last known state
+    public event deviceInfoEvent OnDeviceRemoved;     // Event to add listners too
+    public event deviceStateEvent OnDeviceStateChange; // Event to add listners too
+    public void DeviceRemoved(DeviceInfo device){ OnDeviceRemoved?.Invoke(device); }         // Function to invoke event listeners
+    public void DeviceStateChange(DeviceInfo device, FlatJoyState2 state){ OnDeviceStateChange?.Invoke(device, state); } // Function to invoke event listeners
   }
 
   /// <summary>
@@ -205,7 +209,10 @@ namespace DirectInputManager {
     public UInt16 lFRx;     // X-axis torque
     public UInt16 lFRy;     // Y-axis torque
     public UInt16 lFRz;     // Z-axis torque
-    public UInt16 rgdwPOV;  // Store each DPAD in chunks of 4 bits inside 16-bit UInt   
+    public UInt16 rgdwPOV;  // Store each DPAD in chunks of 4 bits inside 16-bit UInt
+    public override int GetHashCode() {
+      return BitConverter.ToInt32(DIManager.FlatStateMD5(this), 0);
+    }
   }
 
   /// <summary>

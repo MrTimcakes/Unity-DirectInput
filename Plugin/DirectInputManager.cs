@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Security.Cryptography;
 #if UNITY_STANDALONE_WIN
   using UnityEngine;
 #endif
@@ -36,7 +37,7 @@ namespace DirectInputManager {
     [UnmanagedFunctionPointer(CallingConvention.StdCall)] public delegate void DeviceChangeCallback(DBTEvents DBTEvent);
     [DllImport(DLLFile)] public static extern void SetDeviceChangeCallback([MarshalAs(UnmanagedType.FunctionPtr)] DeviceChangeCallback onDeviceChange);
 
-    [DllImport(DLLFile)] public static extern int DEBUG1(string guidInstance, [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] DEBUGDATA);
+    [DllImport(DLLFile)] public static extern int DEBUG1([MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] DEBUGDATA);
   }
   class DIManager {
     //////////////////////////////////////////////////////////////
@@ -136,8 +137,8 @@ namespace DirectInputManager {
     public static bool Destroy(string guidInstance) {
       if (!_activeDevices.ContainsKey(guidInstance)) { return true; } // We don't think we're attached to that device, consider it removed
       int hresult = Native.DestroyDevice(guidInstance);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] DestroyDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       _activeDevices.Remove(guidInstance); // remove from our C# active device tracker
+      if (hresult != 0) { DebugLog($"[DirectInputManager] DestroyDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -154,6 +155,10 @@ namespace DirectInputManager {
       return DeviceState;
     }
 
+    // public static async Task<FlatJoyState2> GetDeviceStateAsync(string guidInstance){
+    //   return await Task.Run(()=>{return GetDeviceState(guidInstance);});
+    // }
+    
     /// <summary>
     /// Retrieve state of the Device<br/>
     /// *Warning* DIJOYSTATE2 contains arrays making it difficult to compare, concider using GetDeviceState
@@ -285,13 +290,71 @@ namespace DirectInputManager {
     }
 
     /// <summary>
+    /// Returns byte[] of state<br/>
+    /// </summary>
+    /// <returns>
+    /// byte[]
+    /// </returns>
+    public static byte[] FlatStateToBytes(FlatJoyState2 state) {
+      int size = Marshal.SizeOf(state);
+      byte[] StateRawBytes = new byte[size];
+      IntPtr ptr = Marshal.AllocHGlobal(size);
+      Marshal.StructureToPtr(state, ptr, true);
+      Marshal.Copy(ptr, StateRawBytes, 0, size);
+      Marshal.FreeHGlobal(ptr);
+      return StateRawBytes;
+    }
+
+    /// <summary>
+    /// Computes MD5 for FlatState<br/>
+    /// </summary>
+    /// <returns>
+    /// byte[] MD5 Hash
+    /// </returns>
+    public static byte[] FlatStateMD5(FlatJoyState2 state) {
+      MD5 md5 = new MD5CryptoServiceProvider();
+      var StateRawBytes = FlatStateToBytes(state);
+      return md5.ComputeHash(StateRawBytes);
+    }
+
+    /// <summary>
+    /// Fetches device state and triggers events if state changed<br/>
+    /// </summary>
+    public static void Poll(string guidInstance) {
+      ActiveDeviceInfo ADI;
+      if (_activeDevices.TryGetValue(guidInstance, out ADI)) { // Check if device active
+        Int32 oldHash = ADI.stateHash;
+        var state = GetDeviceState(guidInstance);
+        ADI.stateHash = state.GetHashCode();
+
+        if (oldHash != ADI.stateHash) {
+          ADI.DeviceStateChange(ADI.deviceInfo, state); // Invoke all event listeners for this device
+          //DebugLog($"{ADI.deviceInfo.productName} State Changed!");
+        }
+      } else {
+        // Device isn't attached
+      }
+
+    }
+
+    public static void PollAll() {
+      foreach(ActiveDeviceInfo ADI in _activeDevices.Values) {
+        Poll(ADI.deviceInfo);
+      }
+    }
+
+    public static bool GetADI(string guidInstance, out ActiveDeviceInfo ADI) {
+      return _activeDevices.TryGetValue(guidInstance, out ADI);
+    }
+
+    /// <summary>
     /// *Internal use only*
     /// Used to test C++ code in the DLL during devlopment
     /// </summary>
-    public static string[] DEBUG1(DeviceInfo device) {
+    public static string[] DEBUG1() {
       string[] DEBUGDATA = null;
       DEBUGDATA = new string[1] { "Test" };
-      int hresult = Native.DEBUG1(device.guidInstance, out DEBUGDATA);
+      int hresult = Native.DEBUG1(out DEBUGDATA);
       if (hresult != 0) { DebugLog($"[DirectInputManager] DEBUG1 Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
 
       return DEBUGDATA;
@@ -312,8 +375,7 @@ namespace DirectInputManager {
 
     // static Action InvokeDebounce;
 
-    private static Debouncer ODCDebouncer = new Debouncer(150); // 150ms
-    // private static Throttler ODCThrottler = new Throttler(150); // Once per 150ms
+    private static Debouncer ODCDebouncer = new Debouncer(150); // 150ms (OnDeviceChangeDebouncer)
 
     /// <summary>
     /// *Internal use only*
@@ -327,14 +389,13 @@ namespace DirectInputManager {
     }
 
     private static async void ScanDevicesForChanges(){
-      DebugLog("HTFI");
       DeviceInfo[] oldDevices = _devices; // Store currently known devices
       await EnumerateDevicesAsync();      // Fetch what devices are available now
 
       var removedDevices = oldDevices.Except(_devices);
       var addedDevices = _devices.Except(oldDevices);
 
-      foreach (DeviceInfo device in removedDevices) {
+      foreach (DeviceInfo device in removedDevices) { // Process removed devices
         // _activeDevices[device.guidInstance]?.DeviceRemoved(device); // Invoke all event listeners for this device
         // _activeDevices.ContainsKey(device.guidInstance) ? _activeDevices[device.guidInstance].DeviceRemoved(device) : null;
         ActiveDeviceInfo ADI;
@@ -345,7 +406,7 @@ namespace DirectInputManager {
         // DebugLog($"{device.productName} Removed!");
       }
 
-      foreach (DeviceInfo device in addedDevices) {
+      foreach (DeviceInfo device in addedDevices) { // Process newly added devices
         DeviceAdded(device); // Invoke event to broadcast a new device is available
       }
     }
@@ -602,6 +663,17 @@ namespace DirectInputManager {
     /// True if effects stopped successfully
     /// </returns>
     public static bool StopAllFFBEffects(DeviceInfo device) => StopAllFFBEffects(device.guidInstance);
+
+
+
+
+
+
+
+
+    public static void Poll(DeviceInfo device) => Poll(device.guidInstance);
+    public static bool GetADI(DeviceInfo device, out ActiveDeviceInfo ADI) => GetADI(device.guidInstance, out ADI);
+
 
   } // End of DIManager
 
