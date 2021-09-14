@@ -16,7 +16,8 @@ namespace DirectInputExplorer {
 
     private void Form1_Load(object sender, EventArgs e) {
       DIManager.Initialize();
-      DIManager.OnDeviceAdded += DIDeviceAdded; // Register handler for when a device is attached
+      DIManager.OnDeviceAdded   += DIDeviceAdded;   // Register handler for when a device is attached
+      DIManager.OnDeviceRemoved += DIDeviceRemoved; // Register handler for when a device is removed
       ButtonEnumerateDevices.PerformClick();
       if(DIManager.devices.Length != 0) { ComboBoxDevices.SelectedIndex = 0; } // Select first device by default
         
@@ -56,7 +57,7 @@ namespace DirectInputExplorer {
       // Attach Events
       ActiveDeviceInfo ADI;
       if (DIManager.GetADI(targetDevice, out ADI)) {   // Check if device active
-        ADI.OnDeviceRemoved     += DIDeviceRemoved;    // Register a handler for when the device is removed
+        //ADI.OnDeviceRemoved     += DIDeviceRemoved;    // Register a handler for when the device is removed
         ADI.OnDeviceStateChange += DeviceStateChanged; // Register a handler for when the device state changes
       }
     }
@@ -180,8 +181,6 @@ namespace DirectInputExplorer {
       string deviceName = $"{device.productName}:{device.guidInstance}";
       System.Diagnostics.Debug.WriteLine($"{deviceName} Removed!");
       ButtonEnumerateDevices.PerformClick(); // Refresh device dropdown
-
-      // Handle moving slected idx
     }
 
     public void DeviceStateChanged(DeviceInfo device, FlatJoyState2 state) {
