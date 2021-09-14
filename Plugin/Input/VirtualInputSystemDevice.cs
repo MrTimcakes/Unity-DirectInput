@@ -215,7 +215,7 @@ public struct FlatJoyState2State : IInputStateTypeInfo {
 }
 
 //////////////////////////////////////////////////////////////
-// DirectInputDevice - InputSystem Bindings
+// DirectInputDevice - InputSystem Logic
 //////////////////////////////////////////////////////////////
 
 #if UNITY_EDITOR
@@ -224,7 +224,9 @@ public struct FlatJoyState2State : IInputStateTypeInfo {
 [InputControlLayout(displayName="DirectInput Device",stateType=typeof(FlatJoyState2State))]
 public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
 
-  public DeviceInfo deviceInfo { get; set; } // Store the info of the DirectInput device for each InputSystem device
+  public static DirectInputDevice current { get; private set; }
+  
+  public DeviceInfo deviceInfo { get; private set; } // Store the info of the DirectInput device for each InputSystem device (Cleared on Domain Reload)
 
 #if UNITY_EDITOR
   static DirectInputDevice(){
@@ -234,103 +236,33 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
 
   [RuntimeInitializeOnLoadMethod]
   private static async void Initialize(){
-    RemoveAllDevices(); // DEBUG ONLY
-    InputSystem.RegisterLayout<DirectInputDevice>(); // Register our new Input Layout
-
     DIManager.Initialize();                   // Start DirectInput if it's not already
     await DIManager.EnumerateDevicesAsync();  // Scan for available devices
     DIManager.OnDeviceAdded += DIDeviceAdded; // Register handler for when a device is attached
-    // Debug.Log($"[FFB]Devices Found: {DIManager.devices.Length}");
-
-    testFunc();
-
+    GenerateLayouts();                        // Create InputSystem Layouts for the DI Devices
+    ProcessDevices();                         // Create InputSystem Devices for the DI Devices
   }
 
-
-
-
-
-
-
-
-
-  // [MenuItem("FFBDev/DEVVVVVVV")]
-  // private static void DEVVVVVVV(){
-  //   // Debouncer.Debounce("DEVVVVVVV", testFunc, 100);
-  //   count = 0;
-  //   //Assign
-  //   Action InvokeDebounce = ((Action)(()=>{Debug.Log($"Inlinefunc");})).Debounce(50);
-
-  //   InvokeDebounce();
-  //   InvokeDebounce();
-  //   Thread.Sleep(60);
-  //   InvokeDebounce();
-  //   Thread.Sleep(100);
-  //   InvokeDebounce();
-  // }
-
-  // // static Action InvokeDebounce;
-  // static int count = 0;
-
-  // public static void FuncToDebounce(){
-  //   Debug.Log($"I ran for the {++count} time.");
-  // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  [MenuItem("FFBDev/testF")]
-  private static void testFunc(){
+  [UnityEditor.Callbacks.DidReloadScripts]
+  private static void OnScriptsReloaded() {
+    GenerateLayouts(); // Generate Layouts when scripts reload so that we don't get "Could not recreate device [...] after domain reload"
+  }
+  
+  public static void GenerateLayouts(){
     foreach (DeviceInfo device in DIManager.devices){
-      string deviceName = $"{device.productName}{device.guidInstance}";  // Build name for device, should be unique
-      if (InputSystem.GetDevice(deviceName) != null){                    // if device already exists
-        // Debug.Log($"Device Already Existed: {deviceName}");
-        // Ensure device is attached?
-      }else{                                                                                      // Device didn't exist
-        Debug.Log("NewDevice, Attemting to attach");
-        if (DIManager.Attach(device)){                                                            // Attach to DirectInput device
-          Debug.Log("Attached, Attempting to add IS device");
-          DirectInputDevice ISDevice = InputSystem.AddDevice<DirectInputDevice>(deviceName);      // Create InputSystem device if DirectInput Attach was sucessful
-          Debug.Log("Added IS device");
-          ISDevice.deviceInfo = device;                                                           // Assign this DirectInput device to this InputSystem Device
-          DIManager.activeDevices[device.guidInstance].OnDeviceRemoved += ISDevice.DIDeviceRemoved; // Register a handler for when the device is removed
-        }
-      }
+      string ISDeviceName        = $"{device.productName}•{device.guidInstance}";
+      string CustomInterfaceName = $"{device.guidInstance}";
+      InputSystem.RegisterLayout<DirectInputDevice>(ISDeviceName, matches:      // Create a layout so we can uniquely address this device
+        new InputDeviceMatcher().WithInterface(CustomInterfaceName)             // Interface name to match our device against
+      );
     }
-  }
-
-  public static void DIDeviceAdded(DeviceInfo devicea){
-    string deviceNamea = $"{devicea.productName}{devicea.guidInstance}";
-    Debug.Log($"{devicea.productName} now available!");
-
-    testFunc();
-
-  }
-
-  protected void DIDeviceRemoved(DeviceInfo device){
-    Debug.Log($"Remove Called! D:{device.productName}");
-    // Debug.Log($"Remove Called! {this.deviceInfo.productName}");
-    InputSystem.RemoveDevice(this); // Remove device from InputSystem, DIManager handles destroying the device for us :)
   }
 
   protected override void FinishSetup(){
     base.FinishSetup();
   }
 
-  public static DirectInputDevice current { get; private set; }
+
   public override void MakeCurrent(){
     base.MakeCurrent();
     current = this;
@@ -343,85 +275,89 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
     DIManager.Destroy(this.deviceInfo.guidInstance ?? "");
   }
 
-  #if UNITY_EDITOR
-
-  [MenuItem("FFBDev/DEV")]
-  private static void DEV(){
-    // var test = InputSystem.GetDevice<DirectInputDevice>();
-    foreach (var device in InputSystem.devices.Where(x => x is DirectInputDevice)){
-      Debug.Log($"{device}");
-    }
-    // foreach (var device in InputSystem.GetDevice<DirectInputDevice>()){
-        
-    // }
+  public void RemakeDevice(DirectInputDevice ISDevice){
+    DeviceInfo DevToRemake = DIManager.devices.First(d => d.guidInstance == ISDevice.device.description.interfaceName);
+    InputSystem.RemoveDevice(ISDevice);
+    AddDIDeviceToIS(DevToRemake);
   }
 
-  [MenuItem("FFBDev/AsyncAwaitTest")]
-  private static async void AsyncAwaitTest(){
-    await DIManager.EnumerateDevicesAsync();
-    Debug.Log($"Deviced Updated!");
+  public void OnUpdate(){
+    if(this.deviceInfo.guidInstance == null){RemakeDevice(this);return;} // On Domain Reload DeviceInfo & Events are cleared, remake them
+    DIManager.Poll(this.deviceInfo.guidInstance); // TODO: Make ASYNC
+  }
+
+  [MenuItem("FFBDev/AddFirstDevice")]
+  private static void AddFirstDevice(){
+    AddDIDeviceToIS(DIManager.devices.FirstOrDefault());
+  }
+
+  [MenuItem("FFBDev/ProcessDevices")]
+  private static void ProcessDevices(){
+    foreach (DeviceInfo device in DIManager.devices){
+      AddDIDeviceToIS(device);                    // Add device to InputSystem
+    }
+  }
+
+  public static bool AddDIDeviceToIS(DeviceInfo device){
+    string ISDeviceName        = $"{device.productName}•{device.guidInstance}"; // : causes name to not show using • instead
+    string CustomInterfaceName = $"{device.guidInstance}";
+
+    if(InputSystem.devices.OfType<DirectInputDevice>().Where(d => (d as DirectInputDevice).deviceInfo.guidInstance == device.guidInstance).Any()){
+      // Debug.Log($"{device.productName} Already Exists");
+      // InputSystem.RemoveDevice( InputSystem.devices.OfType<DirectInputDevice>().Where(d => (d as DirectInputDevice).deviceInfo.guidInstance == device.guidInstance).First() );
+      return false;
+    }
+
+    if (DIManager.Attach(device)){                                              // Attach to DirectInput device, proceed if successfully connected
+      InputSystem.RegisterLayout<DirectInputDevice>(ISDeviceName, matches:      // Create a layout so we can uniquely address this device
+        new InputDeviceMatcher().WithInterface(CustomInterfaceName)             // Interface name to match our device against
+      );
+      DirectInputDevice ISDevice = InputSystem.AddDevice(                       // Create InputSystem Device
+        new InputDeviceDescription {
+          interfaceName = CustomInterfaceName,                                  // Match to our unique layout
+          product = $"{device.productName}",
+        }
+      ) as DirectInputDevice;                                                   // as DirectInputDevice so we can set deviceInfo property
+      ISDevice.deviceInfo = device;                                             // Assign this DirectInput device to this InputSystem Device
+      ActiveDeviceInfo ADI = DIManager.activeDevices[device.guidInstance];
+      ADI.OnDeviceRemoved     += ISDevice.DIDeviceRemoved;                      // Register a handler for when the device is removed
+      ADI.OnDeviceStateChange += ISDevice.DeviceStateChanged;                   // Register a handler for when the device state changes
+      // Debug.Log($"Added Device: {ISDevice.device.name}");
+      return true;
+    }
+
+    return false; // Just incase
+  }
+
+  public static void DIDeviceAdded(DeviceInfo device){
+    Debug.Log($"DIDeviceAdded;: {device.guidProduct}");
+    AddDIDeviceToIS(device);
+  }
+
+  protected void DIDeviceRemoved(DeviceInfo device){
+    Debug.Log($"Remove Called! D:{device.productName}");
+    // Debug.Log($"Remove Called! {this.deviceInfo.productName}");
+    InputSystem.RemoveDevice(this); // Remove device from InputSystem, DIManager handles destroying the device for us :)
   }
   
-  [MenuItem("FFBDev/Init")]
-  private static void DEVINIT(){
-    Initialize();
-  }
+  protected void DeviceStateChanged(DeviceInfo device, FlatJoyState2 state){
+    // Debug.Log($"State Change! D:{device.productName}");
 
-  [MenuItem("FFBDev/DevEnumDevices")]
-  private static void DevEnumDevices(){
-    DIManager.EnumerateDevices();
-    Debug.Log("Enumed Devices");
-  }
+    // Convert FlatJoyState2 to FlatJoyState2State (The InputSystem Type)
+    GCHandle handle = GCHandle.Alloc(state, GCHandleType.Pinned);
+    FlatJoyState2State ISState = (FlatJoyState2State)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(FlatJoyState2State));
+    handle.Free();
 
-  [MenuItem("FFBDev/Create Virtual Input Device")]
-  private static void CreateDeviceDev(){
-    InputSystem.AddDevice<DirectInputDevice>("Test1");
+    InputSystem.QueueStateEvent(this, ISState); // Notify InputSystem with updated state
   }
-
-  // #if UNITY_EDITOR
-  // [MenuItem("ForceFeedback/Create Virtual Input Device")]
-  // private static void CreateDevice(){
-  //     InputSystem.AddDevice(new InputDeviceDescription{
-  //         interfaceName="DirectX DirectInput",
-  //         product="DIJOYSTATE2 Device"
-  //     });
-  // }
 
   [MenuItem("FFBDev/RemoveAll")]
   private static void RemoveAllDevices(){
-    foreach(var device in InputSystem.devices.Where(x => x is DirectInputDevice) ){
-      InputSystem.RemoveDevice(device);
-    }
-    foreach(var device in InputSystem.devices.Where(x => x is DirectInputDevice) ){
-      InputSystem.RemoveDevice(device);
+    while(InputSystem.devices.OfType<DirectInputDevice>().Any()){
+      InputSystem.RemoveDevice(InputSystem.devices.OfType<DirectInputDevice>().First());
     }
   }
-
-  #endif
-
-  public void OnUpdate(){
-    // I'd like to store the DeviceInfo in the InputSystem device but this will do for now
-    // string productName = this.name.Split('‣')[0];
-    // string guidInstance = this.name.Split('‣')[1];
-
-    
-    // if GUID in DIManager.activeDevices
-    //   if newState != prev state
-
-  }
-
-  // public static void OnDeviceStateChange(object sender, EventArgs args){
-  //   DIJOYSTATE2State state=DirectInputFFB.Utilities.UnFlatJoyState2(DirectInputFFB.FFBManager.state);
-  //   // Check if DirectInputDevice is enabled
-  //   if( InputSystem.devices.FirstOrDefault(x => x is DirectInputDevice) != null){
-  //     InputSystem.QueueStateEvent( DirectInputDevice.current , state); // Only bubble Input System Event if input has changed
-  //   }
-  // }
 }
-
-
-
-
 
 //////////////////////////////////////////////////////////////
 // Input System Processors
