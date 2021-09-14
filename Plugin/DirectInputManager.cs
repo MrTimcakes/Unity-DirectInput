@@ -60,7 +60,7 @@ namespace DirectInputManager {
     // Private Variables - For Internal use
     //////////////////////////////////////////////////////////////
 
-    private static bool _isInitialized = false; // is DIManager ready
+    private static bool _isInitialized = false;               // is DIManager ready
     private static DeviceInfo[] _devices = new DeviceInfo[0]; // Hold data for devices plugged in
     private static Dictionary<string, ActiveDeviceInfo> _activeDevices = new Dictionary<string, ActiveDeviceInfo>(); // Hold data for devices actively attached
 
@@ -90,7 +90,7 @@ namespace DirectInputManager {
     }
 
     /// <summary>
-    /// Fetch currently available devices and populate DeviceInfo[] devices<br/>
+    /// Fetch currently available devices and populate DIManager.devices<br/>
     /// </summary>
     public static void EnumerateDevices() {
       int deviceCount = 0;
@@ -337,12 +337,22 @@ namespace DirectInputManager {
 
     }
 
+    /// <summary>
+    /// Fetches device state for all devices and queues events<br/>
+    /// </summary>
     public static void PollAll() {
       foreach(ActiveDeviceInfo ADI in _activeDevices.Values) {
         Poll(ADI.deviceInfo);
       }
     }
 
+    /// <summary>
+    /// Obtains ActiveDeviceInfo for specified GUID<br/>
+    /// </summary>
+    /// <returns>
+    /// Bool if GUID was found <br/>
+    /// OUT ADI of device if found
+    /// </returns>
     public static bool GetADI(string guidInstance, out ActiveDeviceInfo ADI) {
       return _activeDevices.TryGetValue(guidInstance, out ADI);
     }
@@ -375,7 +385,7 @@ namespace DirectInputManager {
 
     // static Action InvokeDebounce;
 
-    private static Debouncer ODCDebouncer = new Debouncer(150); // 150ms (OnDeviceChangeDebouncer)
+    private static Debouncer ODCDebouncer = new Debouncer(150);        // 150ms (OnDeviceChangeDebouncer)
 
     /// <summary>
     /// *Internal use only*
@@ -389,25 +399,24 @@ namespace DirectInputManager {
     }
 
     private static async void ScanDevicesForChanges(){
-      DeviceInfo[] oldDevices = _devices; // Store currently known devices
-      await EnumerateDevicesAsync();      // Fetch what devices are available now
+      DeviceInfo[] oldDevices = _devices;                              // Store currently known devices
+      await EnumerateDevicesAsync();                                   // Fetch what devices are available now
 
       var removedDevices = oldDevices.Except(_devices);
       var addedDevices = _devices.Except(oldDevices);
 
-      foreach (DeviceInfo device in removedDevices) { // Process removed devices
-        // _activeDevices[device.guidInstance]?.DeviceRemoved(device); // Invoke all event listeners for this device
-        // _activeDevices.ContainsKey(device.guidInstance) ? _activeDevices[device.guidInstance].DeviceRemoved(device) : null;
+      foreach (DeviceInfo device in removedDevices) {                  // Process removed devices
         ActiveDeviceInfo ADI;
         if(_activeDevices.TryGetValue(device.guidInstance, out ADI)){
-          ADI.DeviceRemoved(device); // Invoke all event listeners for this device
+          ADI.DeviceRemoved(device);                                   // Invoke event listeners for this device
         }
-        Destroy(device);                                           // If device was connceted remove it gracefully
+        DeviceRemoved(device);                                         // Invoke all event listeners all devices
+        Destroy(device);                                               // If device was connceted remove it gracefully
         // DebugLog($"{device.productName} Removed!");
       }
 
-      foreach (DeviceInfo device in addedDevices) { // Process newly added devices
-        DeviceAdded(device); // Invoke event to broadcast a new device is available
+      foreach (DeviceInfo device in addedDevices) {                    // Process newly added devices
+        DeviceAdded(device);                                           // Invoke event to broadcast a new device is available
       }
     }
 
@@ -664,16 +673,19 @@ namespace DirectInputManager {
     /// </returns>
     public static bool StopAllFFBEffects(DeviceInfo device) => StopAllFFBEffects(device.guidInstance);
 
-
-
-
-
-
-
-
+    /// <summary>
+    /// Fetches device state and triggers events if state changed<br/>
+    /// </summary>
     public static void Poll(DeviceInfo device) => Poll(device.guidInstance);
-    public static bool GetADI(DeviceInfo device, out ActiveDeviceInfo ADI) => GetADI(device.guidInstance, out ADI);
 
+    /// <summary>
+    /// Obtains ActiveDeviceInfo for specified GUID<br/>
+    /// </summary>
+    /// <returns>
+    /// Bool if GUID was found <br/>
+    /// OUT ADI of device if found
+    /// </returns>    
+    public static bool GetADI(DeviceInfo device, out ActiveDeviceInfo ADI) => GetADI(device.guidInstance, out ADI);
 
   } // End of DIManager
 
@@ -751,20 +763,20 @@ namespace DirectInputManager {
 public class Debouncer {
   private List<CancellationTokenSource> CancelTokens = new List<CancellationTokenSource>();
   private int TimeoutMs;
-  private readonly object _lockThis = new object(); // Use a locking object to prevent the debouncer to trigger again while the func is still running
+  private readonly object _lockThis = new object();                    // Use a locking object to prevent the debouncer to trigger again while the func is still running
 
   public Debouncer(int timeoutMs = 300) {
     this.TimeoutMs = timeoutMs;
   }
 
   public void Debounce(Action TargetAction) {
-    CancelAllTokens();                                                 // 
-    var tokenSource = new CancellationTokenSource();                   // 
-    lock (_lockThis) { CancelTokens.Add(tokenSource); }                // 
-    Task.Delay(TimeoutMs, tokenSource.Token).ContinueWith(task => {    // (All Tasks continue)
+    CancelAllTokens();                                                 // Cancel existing Tokens Each invocation
+    var tokenSource = new CancellationTokenSource();                   // Token for this invocation
+    lock (_lockThis) { CancelTokens.Add(tokenSource); }                // Safely add this Token to the list
+    Task.Delay(TimeoutMs, tokenSource.Token).ContinueWith(task => {    // (Note: All Tasks continue)
       if (!tokenSource.IsCancellationRequested) {                      // if this is the task that hasn't been canceled
-        CancelAllTokens();                                             // 
-        CancelTokens = new List<CancellationTokenSource>();            // 
+        CancelAllTokens();                                             // Clear
+        CancelTokens = new List<CancellationTokenSource>();            // Empty List
         lock (_lockThis) { TargetAction(); }                           // Excute Action
       }
     }, TaskScheduler.FromCurrentSynchronizationContext());             // Perform on current thread
