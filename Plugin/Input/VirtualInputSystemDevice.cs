@@ -240,28 +240,23 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
     await DIManager.EnumerateDevicesAsync();  // Scan for available devices
     DIManager.OnDeviceAdded += DIDeviceAdded; // Register handler for when a device is attached
     GenerateLayouts();                        // Create InputSystem Layouts for the DI Devices
-    ProcessDevices();                         // Create InputSystem Devices for the DI Devices
+    AddAllDevicesToIS();                         // Create InputSystem Devices for the DI Devices
   }
 
   [UnityEditor.Callbacks.DidReloadScripts]
   private static void OnScriptsReloaded() {
-    GenerateLayouts(); // Generate Layouts when scripts reload so that we don't get "Could not recreate device [...] after domain reload"
+    GenerateLayouts();
   }
-  
+
   public static void GenerateLayouts(){
     foreach (DeviceInfo device in DIManager.devices){
-      string ISDeviceName        = $"{device.productName}•{device.guidInstance}";
-      string CustomInterfaceName = $"{device.guidInstance}";
-      InputSystem.RegisterLayout<DirectInputDevice>(ISDeviceName, matches:      // Create a layout so we can uniquely address this device
-        new InputDeviceMatcher().WithInterface(CustomInterfaceName)             // Interface name to match our device against
-      );
+      InputSystem.RegisterLayout<DirectInputDevice>($"DI_{device.productName}");
     }
   }
 
   protected override void FinishSetup(){
     base.FinishSetup();
   }
-
 
   public override void MakeCurrent(){
     base.MakeCurrent();
@@ -275,49 +270,35 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
     DIManager.Destroy(this.deviceInfo.guidInstance ?? "");
   }
 
-  public void RemakeDevice(DirectInputDevice ISDevice){
-    DeviceInfo DevToRemake = DIManager.devices.First(d => d.guidInstance == ISDevice.device.description.interfaceName);
-    InputSystem.RemoveDevice(ISDevice);
-    AddDIDeviceToIS(DevToRemake);
-  }
-
   public void OnUpdate(){
-    if(this.deviceInfo.guidInstance == null){RemakeDevice(this);return;} // On Domain Reload DeviceInfo & Events are cleared, remake them
+    if(this.deviceInfo.guidInstance == null){DomainReloadHotfix();return;} // On Domain Reload DeviceInfo & Events are cleared, remake them
     DIManager.Poll(this.deviceInfo.guidInstance); // TODO: Make ASYNC
   }
 
-  [MenuItem("FFBDev/AddFirstDevice")]
+  [MenuItem("FFBDev/Add First Device")]
   private static void AddFirstDevice(){
     AddDIDeviceToIS(DIManager.devices.FirstOrDefault());
   }
 
-  [MenuItem("FFBDev/ProcessDevices")]
-  private static void ProcessDevices(){
+  [MenuItem("FFBDev/Add All Devices")]
+  private static void AddAllDevicesToIS(){
     foreach (DeviceInfo device in DIManager.devices){
-      AddDIDeviceToIS(device);                    // Add device to InputSystem
+      AddDIDeviceToIS(device); // Add device to InputSystem
     }
   }
 
   public static bool AddDIDeviceToIS(DeviceInfo device){
-    string ISDeviceName        = $"{device.productName}•{device.guidInstance}"; // : causes name to not show using • instead
-    string CustomInterfaceName = $"{device.guidInstance}";
+    string ISDeviceName = $"{device.productName}•{device.guidInstance}"; // : causes name to not show using • instead
+    string ISLayoutName = $"DI_{device.productName}";
 
-    if(InputSystem.devices.OfType<DirectInputDevice>().Where(d => (d as DirectInputDevice).deviceInfo.guidInstance == device.guidInstance).Any()){
-      // Debug.Log($"{device.productName} Already Exists");
-      // InputSystem.RemoveDevice( InputSystem.devices.OfType<DirectInputDevice>().Where(d => (d as DirectInputDevice).deviceInfo.guidInstance == device.guidInstance).First() );
-      return false;
-    }
+    if( InputSystem.GetDevice(ISDeviceName) != null ){ return false; } // Device already exists
 
     if (DIManager.Attach(device)){                                              // Attach to DirectInput device, proceed if successfully connected
-      InputSystem.RegisterLayout<DirectInputDevice>(ISDeviceName, matches:      // Create a layout so we can uniquely address this device
-        new InputDeviceMatcher().WithInterface(CustomInterfaceName)             // Interface name to match our device against
-      );
-      DirectInputDevice ISDevice = InputSystem.AddDevice(                       // Create InputSystem Device
-        new InputDeviceDescription {
-          interfaceName = CustomInterfaceName,                                  // Match to our unique layout
-          product = $"{device.productName}",
-        }
-      ) as DirectInputDevice;                                                   // as DirectInputDevice so we can set deviceInfo property
+      if(!InputSystem.ListLayouts().Any(ISLayout => ISLayout == ISLayoutName)){ // Layout Doesn't already exist
+        InputSystem.RegisterLayout<DirectInputDevice>(ISLayoutName);
+      }
+      DirectInputDevice ISDevice = InputSystem.AddDevice(ISLayoutName, ISDeviceName, null) as DirectInputDevice;
+      // InputSystem.SetDeviceUsage((ISDevice as InputDevice), $"{device.productName}");
       ISDevice.deviceInfo = device;                                             // Assign this DirectInput device to this InputSystem Device
       ActiveDeviceInfo ADI = DIManager.activeDevices[device.guidInstance];
       ADI.OnDeviceRemoved     += ISDevice.DIDeviceRemoved;                      // Register a handler for when the device is removed
@@ -326,16 +307,16 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
       return true;
     }
 
-    return false; // Just incase
+    return false; // Failed to attach to DI Device
   }
 
   public static void DIDeviceAdded(DeviceInfo device){
-    Debug.Log($"DIDeviceAdded;: {device.guidProduct}");
+    Debug.Log($"[DirectInputManager] DIDeviceAdded: {device.productName}•{device.guidProduct}");
     AddDIDeviceToIS(device);
   }
 
   protected void DIDeviceRemoved(DeviceInfo device){
-    Debug.Log($"Remove Called! D:{device.productName}");
+    Debug.Log($"[DirectInputManager] Remove Called! D:{device.productName}•{device.guidProduct}");
     // Debug.Log($"Remove Called! {this.deviceInfo.productName}");
     InputSystem.RemoveDevice(this); // Remove device from InputSystem, DIManager handles destroying the device for us :)
   }
@@ -351,11 +332,16 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
     InputSystem.QueueStateEvent(this, ISState); // Notify InputSystem with updated state
   }
 
-  [MenuItem("FFBDev/RemoveAll")]
+  [MenuItem("FFBDev/Remove All Devices")]
   private static void RemoveAllDevices(){
     while(InputSystem.devices.OfType<DirectInputDevice>().Any()){
       InputSystem.RemoveDevice(InputSystem.devices.OfType<DirectInputDevice>().First());
     }
+  }
+
+  private void DomainReloadHotfix(){
+    RemoveAllDevices(); // Remove all devices
+    AddAllDevicesToIS();   // Re-add all devices
   }
 }
 
