@@ -79,14 +79,14 @@ extern "C" { // Everything to be made available by the DLL
   //////////////////////////////////////////////////////////////
   // DLL Functions
   //////////////////////////////////////////////////////////////
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT              StartDirectInput();
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT              StopDirectInput();
-	DIRECTINPUTFORCEFEEDBACK_API DeviceInfo*          EnumerateDevices(/*[out]*/ int& deviceCount);
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT              CreateDevice(LPCSTR guidInstance);
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT              DestroyDevice(LPCSTR guidInstance);
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceState(LPCSTR guidInstance, /*[out]*/ FlatJoyState2& deviceState);
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceStateRaw(LPCSTR guidInstance, /*[out]*/ DIJOYSTATE2& deviceState);
-	DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceCapabilities(LPCSTR guidInstance, /*[out]*/ DIDEVCAPS& deviceCapabilitiesOut);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              StartDirectInput();
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              StopDirectInput();
+  DIRECTINPUTFORCEFEEDBACK_API DeviceInfo*          EnumerateDevices(/*[out]*/ int& deviceCount);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              CreateDevice(LPCSTR guidInstance);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              DestroyDevice(LPCSTR guidInstance);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceState(LPCSTR guidInstance, /*[out]*/ FlatJoyState2& deviceState);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceStateRaw(LPCSTR guidInstance, /*[out]*/ DIJOYSTATE2& deviceState);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetDeviceCapabilities(LPCSTR guidInstance, /*[out]*/ DIDEVCAPS& deviceCapabilitiesOut);
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              GetActiveDevices(/*[out]*/ SAFEARRAY** activeGUIDs);
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              SetAutocenter(LPCSTR guidInstance, bool AutocenterState);
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              EnumerateFFBEffects(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBEffects);
@@ -137,3 +137,4 @@ void DestroyDeviceIfExists(LPCSTR guidInstance);
 HRESULT BuildSafeArray(std::vector<std::wstring> sourceData, /*[out]*/ SAFEARRAY** SafeArrayData);
 DWORD AxisTypeToDIJOFS(GUID axisType);
 GUID EffectTypeToGUID(Effects::Type effectType);
+bool IsDuplicateHID(const DIDEVICEINSTANCE* DIDI);

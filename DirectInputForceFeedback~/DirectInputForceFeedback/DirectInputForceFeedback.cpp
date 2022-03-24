@@ -435,6 +435,11 @@ BOOL CALLBACK _EnumDevicesCallback(const DIDEVICEINSTANCE* DIDI, void* pContext)
   strcpy_s( di.instanceName, INStr.length()+1, INStr.c_str() );
   strcpy_s( di.productName,  PNStr.length()+1, PNStr.c_str() );
   di.FFBCapable = false; // Default all devices to false, FFB devices are updated later
+
+  // Fanatec Fix (Fanatec devices enumerate as 2)
+  if (LOWORD(DIDI->guidProduct.Data1) == 0x0EB7) // Fanatec manufacturer ID
+    if (IsDuplicateHID(DIDI)) { return DIENUM_CONTINUE; } // Skip if duplicate
+
   _DeviceInstances.push_back(di);
   return DIENUM_CONTINUE;
 }
@@ -748,5 +753,25 @@ GUID EffectTypeToGUID(Effects::Type effectType) {
       break;
     default:
       return GUID_Unknown;
+  }
+}
+
+bool IsDuplicateHID(const DIDEVICEINSTANCE *DIDI) {
+  HRESULT hr;
+  LPDIRECTINPUTDEVICE8 fanatecDevice = nullptr;
+  if (FAILED(hr = _DirectInput->CreateDevice(DIDI->guidInstance, &fanatecDevice, NULL))) { return true; } // L"CreateDevice failed! 0x%08x", hr
+
+  DIPROPGUIDANDPATH GUIDPath;
+  GUIDPath.diph.dwSize = sizeof(DIPROPGUIDANDPATH);
+  GUIDPath.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+  GUIDPath.diph.dwObj = 0;
+  GUIDPath.diph.dwHow = DIPH_DEVICE;
+  if (FAILED(hr = fanatecDevice->GetProperty(DIPROP_GUIDANDPATH, &GUIDPath.diph))) { fanatecDevice->Release(); return true; } // L"GetProperty failed! Failed to get symbolic path for device 0x%08x", hr
+  fanatecDevice->Release();
+
+  if (wcsstr(GUIDPath.wszPath, L"&col01") != 0) { // This is our primary device (HID Path contains "&col01")
+    return false;
+  } else {
+    return true; // This is a duplicate device
   }
 }
