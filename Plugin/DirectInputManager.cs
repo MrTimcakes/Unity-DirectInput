@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0618 // Disable Marshalling warnings
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
