@@ -63,6 +63,7 @@ namespace DirectInputExplorer {
     }
 
     private void ButtonRemove_Click(object sender, EventArgs e) {
+      DIManager.StopAllFFBEffects(DIManager.devices[ComboBoxDevices.SelectedIndex]);
       DIManager.Destroy(DIManager.devices[ComboBoxDevices.SelectedIndex]); // Destroy device
       UpdateReadoutsWithDeviceData(DIManager.devices[ComboBoxDevices.SelectedIndex]);
     }

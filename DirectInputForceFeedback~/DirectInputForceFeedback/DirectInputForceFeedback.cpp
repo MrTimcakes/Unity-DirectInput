@@ -41,11 +41,7 @@ HRESULT StopDirectInput() {
   if (_DirectInput == NULL) { return hr = S_OK; } // No DirectInput Instance
 
   for (const auto& [GUIDString, Device] : _ActiveDevices) { // For each device
-    for (const auto& [effectType, effectControl] : _DeviceFFBEffectControl[GUIDString]) { // For each effect
-      if (FAILED(hr = _DeviceFFBEffectControl[GUIDString][effectType]->Stop())) { return hr; } // Stop Effect
-      _DeviceFFBEffectControl[GUIDString].erase(effectType);        // Remove Effect Control
-      _DeviceFFBEffectConfig[GUIDString].erase(effectType);         // Remove Effect Config
-    }
+    // TODO: Stop Effects?
     if (FAILED(hr = Device->Unacquire())) { return hr; }
   }
 
@@ -115,7 +111,7 @@ HRESULT DestroyDevice(LPCSTR guidInstance) {
   HRESULT hr = E_FAIL;
   std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
 
-  // TODO: Stop FFB Effects First?
+  StopAllFFBEffects(guidInstance);
   if (SUCCEEDED(hr = _ActiveDevices[GUIDString]->Unacquire())) {
     _ActiveDevices.erase(GUIDString);
   }
@@ -244,9 +240,7 @@ HRESULT EnumerateFFBAxes(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** FFBAxes) {
   return hr;
 }
 
-// 
-// Should take Axes too?
-//
+// Creates/Enables the Effect on the device 
 HRESULT CreateFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
   HRESULT hr = E_FAIL;
   std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
@@ -344,7 +338,7 @@ HRESULT DestroyFFBEffect(LPCSTR guidInstance, Effects::Type effectType) {
   std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
 
   // Destroy Effect
-  if (!_DeviceFFBEffectControl[GUIDString].contains(effectType)) { return E_ABORT; } // Effect doesn't exist
+  if (!_DeviceFFBEffectControl[GUIDString].contains(effectType)) { return S_OK; } // Effect doesn't exist
 
   hr = _DeviceFFBEffectControl[GUIDString][effectType]->Stop(); // Stop Effect
   _DeviceFFBEffectControl[GUIDString].erase(effectType);        // Remove Effect Control
@@ -383,11 +377,25 @@ HRESULT StopAllFFBEffects(LPCSTR guidInstance) {
   HRESULT hr = E_FAIL;
   std::string GUIDString((LPCSTR)guidInstance); if (!_ActiveDevices.contains(GUIDString)) return hr; // Device not attached, fail
   hr = S_OK; // Incase there are no active effects, act like we stopped them all
-  for (const auto& [effectType, effectControl] : _DeviceFFBEffectControl[GUIDString]) { // For each effect
-    hr = _DeviceFFBEffectControl[GUIDString][effectType]->Stop(); // Stop Effect
-    _DeviceFFBEffectControl[GUIDString].erase(effectType);        // Remove Effect Control
-    _DeviceFFBEffectConfig[GUIDString].erase(effectType);         // Remove Effect Config
-  }
+
+  //for (auto& [effectType, effectControl] : _DeviceFFBEffectControl[GUIDString]) { // For each effect
+  //  if (FAILED(hr = effectControl->Stop())) { return hr; } // Stop Effect
+  //  //_DeviceFFBEffectControl[GUIDString].erase(effectType);        // Remove Effect Control        // effectType isn't behaving like Effects::Type, "An unhandled exception of type 'System.AccessViolationException' occurred in DirectInputExplorer.dll" "Attempted to read or write protected memory. This is often an indication that other memory is corrupt."
+  //  //_DeviceFFBEffectConfig[GUIDString].erase(effectType);         // Remove Effect Config
+  //}
+
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::ConstantForce); 
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::RampForce);
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::Square);
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::Sine);
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::Triangle);
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::SawtoothUp);
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::SawtoothDown);
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::Spring);
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::Damper);
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::Inertia);
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::Friction);
+  hr = DestroyFFBEffect(guidInstance, Effects::Type::CustomForce);
 
   return hr;
 }
@@ -758,16 +766,16 @@ GUID EffectTypeToGUID(Effects::Type effectType) {
 
 bool IsDuplicateHID(const DIDEVICEINSTANCE *DIDI) {
   HRESULT hr;
-  LPDIRECTINPUTDEVICE8 fanatecDevice = nullptr;
-  if (FAILED(hr = _DirectInput->CreateDevice(DIDI->guidInstance, &fanatecDevice, NULL))) { return true; } // L"CreateDevice failed! 0x%08x", hr
+  LPDIRECTINPUTDEVICE8 DIDevice = nullptr;
+  if (FAILED(hr = _DirectInput->CreateDevice(DIDI->guidInstance, &DIDevice, NULL))) { return true; } // L"CreateDevice failed! 0x%08x", hr
 
   DIPROPGUIDANDPATH GUIDPath;
   GUIDPath.diph.dwSize = sizeof(DIPROPGUIDANDPATH);
   GUIDPath.diph.dwHeaderSize = sizeof(DIPROPHEADER);
   GUIDPath.diph.dwObj = 0;
   GUIDPath.diph.dwHow = DIPH_DEVICE;
-  if (FAILED(hr = fanatecDevice->GetProperty(DIPROP_GUIDANDPATH, &GUIDPath.diph))) { fanatecDevice->Release(); return true; } // L"GetProperty failed! Failed to get symbolic path for device 0x%08x", hr
-  fanatecDevice->Release();
+  if (FAILED(hr = DIDevice->GetProperty(DIPROP_GUIDANDPATH, &GUIDPath.diph))) { DIDevice->Release(); return true; } // L"GetProperty failed! Failed to get symbolic path for device 0x%08x", hr
+  DIDevice->Release();
 
   if (wcsstr(GUIDPath.wszPath, L"&col01") != 0) { // This is our primary device (HID Path contains "&col01")
     return false;
