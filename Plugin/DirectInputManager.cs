@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0618 // Disable Marshalling warnings
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -39,7 +41,7 @@ namespace DirectInputManager {
 
     [DllImport(DLLFile)] public static extern int DEBUG1([MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] DEBUGDATA);
   }
-  class DIManager {
+  public class DIManager {
     //////////////////////////////////////////////////////////////
     // Cross Platform "Macros" - Allows lib to work in Visual Studio & Unity
     //////////////////////////////////////////////////////////////
@@ -109,7 +111,13 @@ namespace DirectInputManager {
     }
 
     public static async Task EnumerateDevicesAsync(){
-      await Task.Run(EnumerateDevices);
+      Task enumDevicesTask = Task.Run(EnumerateDevices);
+      Task warningTimeout  = Task.Delay(1000);
+      
+      if (warningTimeout == await Task.WhenAny(enumDevicesTask, warningTimeout)) {
+        DebugLog($"[DirectInputManager] Warning EnumerateDevices is taking longer than expected!");
+        await enumDevicesTask; // Continue to wait for EnumerateDevices
+      }
     }
 
     /// <summary>
@@ -438,7 +446,7 @@ namespace DirectInputManager {
     /// <returns>
     /// A boolean representing the if the Effect updated successfully
     /// </returns>
-    public static bool UpdateEffect(DeviceInfo device, DICondition[] conditions) {
+    public static bool UpdateEffect(string guidInstance, DICondition[] conditions) {
       for (int i = 0; i < conditions.Length; i++) {
         conditions[i] = new DICondition();
         conditions[i].deadband =            ClampAgnostic(conditions[i].deadband,                 0, 10000);
@@ -449,7 +457,7 @@ namespace DirectInputManager {
         conditions[i].positiveSaturation =  ClampAgnostic(conditions[i].positiveSaturation,       0, 10000);
       }
 
-      int hresult = Native.UpdateFFBEffect(device.guidInstance, FFBEffects.Spring, conditions);
+      int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.Spring, conditions);
       if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
@@ -460,7 +468,7 @@ namespace DirectInputManager {
     /// <returns>
     /// A boolean representing the if the Effect updated successfully
     /// </returns>
-    public static bool UpdateConstantForceSimple(DeviceInfo device, int Magnitude) {
+    public static bool UpdateConstantForceSimple(string guidInstance, int Magnitude) {
       DICondition[] conditions = new DICondition[1];
       for (int i = 0; i < conditions.Length; i++) {
         conditions[i] = new DICondition();
@@ -472,7 +480,7 @@ namespace DirectInputManager {
         conditions[i].positiveSaturation = 0;
       }
 
-      int hresult = Native.UpdateFFBEffect(device.guidInstance, FFBEffects.ConstantForce, conditions);
+      int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.ConstantForce, conditions);
       if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
@@ -488,7 +496,7 @@ namespace DirectInputManager {
     /// <returns>
     /// A boolean representing the if the Effect updated successfully
     /// </returns>
-    public static bool UpdateSpringSimple(DeviceInfo device, uint deadband, int offset, int negativeCoefficient, int positiveCoefficient, uint negativeSaturation, uint positiveSaturation) {
+    public static bool UpdateSpringSimple(string guidInstance, uint deadband, int offset, int negativeCoefficient, int positiveCoefficient, uint negativeSaturation, uint positiveSaturation) {
       DICondition[] conditions = new DICondition[1];
       for (int i = 0; i < conditions.Length; i++) {
         conditions[i] = new DICondition();
@@ -500,7 +508,7 @@ namespace DirectInputManager {
         conditions[i].positiveSaturation =  ClampAgnostic(positiveSaturation,       0, 10000);
       }
 
-      int hresult = Native.UpdateFFBEffect(device.guidInstance, FFBEffects.Spring, conditions);
+      int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.Spring, conditions);
       if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
@@ -511,7 +519,7 @@ namespace DirectInputManager {
     /// <returns>
     /// A boolean representing the if the Effect updated successfully
     /// </returns>
-    public static bool UpdateDamperSimple(DeviceInfo device, int Magnitude) {
+    public static bool UpdateDamperSimple(string guidInstance, int Magnitude) {
       DICondition[] conditions = new DICondition[1];
       for (int i = 0; i < conditions.Length; i++) {
         conditions[i] = new DICondition();
@@ -523,7 +531,7 @@ namespace DirectInputManager {
         conditions[i].positiveSaturation = 0;
       }
 
-      int hresult = Native.UpdateFFBEffect(device.guidInstance, FFBEffects.Damper, conditions);
+      int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.Damper, conditions);
       if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
@@ -535,7 +543,7 @@ namespace DirectInputManager {
     /// <returns>
     /// A boolean representing the if the Effect updated successfully
     /// </returns>
-    public static bool UpdateFrictionSimple(DeviceInfo device, int Magnitude) {
+    public static bool UpdateFrictionSimple(string guidInstance, int Magnitude) {
       DICondition[] conditions = new DICondition[1];
       for (int i = 0; i < conditions.Length; i++) {
         conditions[i] = new DICondition();
@@ -547,7 +555,7 @@ namespace DirectInputManager {
         conditions[i].positiveSaturation = 0;
       }
 
-      int hresult = Native.UpdateFFBEffect(device.guidInstance, FFBEffects.Friction, conditions);
+      int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.Friction, conditions);
       if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
@@ -558,7 +566,7 @@ namespace DirectInputManager {
     /// <returns>
     /// A boolean representing the if the Effect updated successfully
     /// </returns>
-    public static bool UpdateInertiaSimple(DeviceInfo device, int Magnitude) {
+    public static bool UpdateInertiaSimple(string guidInstance, int Magnitude) {
       DICondition[] conditions = new DICondition[1];
       for (int i = 0; i < conditions.Length; i++) {
         conditions[i] = new DICondition();
@@ -570,7 +578,7 @@ namespace DirectInputManager {
         conditions[i].positiveSaturation = 0;
       }
 
-      int hresult = Native.UpdateFFBEffect(device.guidInstance, FFBEffects.Inertia, conditions);
+      int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.Inertia, conditions);
       if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
@@ -686,6 +694,71 @@ namespace DirectInputManager {
     /// OUT ADI of device if found
     /// </returns>    
     public static bool GetADI(DeviceInfo device, out ActiveDeviceInfo ADI) => GetADI(device.guidInstance, out ADI);
+
+    //////////////////////////////////////////////////////////////
+    // Effect Specific Methods Overloads
+    //////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Update existing effect with new DICONDITION array<br/><br/>
+    /// 
+    /// DICondition[DeviceFFBEffectAxesCount]:<br/><br/>
+    /// deadband: Inacive Zone [-10,000 - 10,000]<br/>
+    /// offset: Move Effect Center[-10,000 - 10,000]<br/>
+    /// negativeCoefficient: Negative of center coefficient [-10,000 - 10,000]<br/>
+    /// positiveCoefficient: Positive of center Coefficient [-10,000 - 10,000]<br/>
+    /// negativeSaturation: Negative of center saturation [0 - 10,000]<br/>
+    /// positiveSaturation: Positive of center saturation [0 - 10,000]<br/>
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateEffect(DeviceInfo device, DICondition[] conditions) => UpdateEffect(device.guidInstance, conditions);
+
+    /// <summary>
+    /// Magnitude: Strength of Force [-10,000 - 10,0000]
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateConstantForceSimple(DeviceInfo device, int Magnitude) => UpdateConstantForceSimple(device.guidInstance, Magnitude);
+
+    /// <summary>
+    /// deadband: Inacive Zone [-10,000 - 10,000]<br/>
+    /// offset: Move Effect Center[-10,000 - 10,000]<br/>
+    /// negativeCoefficient: Negative of center coefficient [-10,000 - 10,000]<br/>
+    /// positiveCoefficient: Positive of center Coefficient [-10,000 - 10,000]<br/>
+    /// negativeSaturation: Negative of center saturation [0 - 10,000]<br/>
+    /// positiveSaturation: Positive of center saturation [0 - 10,000]<br/>
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateSpringSimple(DeviceInfo device, uint deadband, int offset, int negativeCoefficient, int positiveCoefficient, uint negativeSaturation, uint positiveSaturation) => UpdateSpringSimple(device.guidInstance, deadband, offset, negativeCoefficient, positiveCoefficient, negativeSaturation, positiveSaturation);
+    
+    /// <summary>
+    /// Magnitude: Strength of Force [-10,000 - 10,0000]
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateDamperSimple(DeviceInfo device, int Magnitude) => UpdateDamperSimple(device.guidInstance, Magnitude);
+
+    /// <summary>
+    /// Magnitude: Strength of Force [-10,000 - 10,0000]
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateFrictionSimple(DeviceInfo device, int Magnitude) => UpdateFrictionSimple(device.guidInstance, Magnitude);
+
+    /// <summary>
+    /// Magnitude: Strength of Force [-10,000 - 10,0000]
+    /// </summary>
+    /// <returns>
+    /// A boolean representing the if the Effect updated successfully
+    /// </returns>
+    public static bool UpdateInertiaSimple(DeviceInfo device, int Magnitude) => UpdateInertiaSimple(device.guidInstance, Magnitude);
 
   } // End of DIManager
 
