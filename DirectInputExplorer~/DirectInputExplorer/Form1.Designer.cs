@@ -114,15 +114,16 @@ namespace DirectInputExplorer
       this.ComboBoxDevices.FormattingEnabled = true;
       this.ComboBoxDevices.Location = new System.Drawing.Point(12, 12);
       this.ComboBoxDevices.Name = "ComboBoxDevices";
-      this.ComboBoxDevices.Size = new System.Drawing.Size(976, 33);
+      this.ComboBoxDevices.Size = new System.Drawing.Size(976, 23);
       this.ComboBoxDevices.TabIndex = 1;
       this.ComboBoxDevices.SelectedIndexChanged += new System.EventHandler(this.ComboBoxDevices_SelectedIndexChanged);
       // 
       // ButtonEnumerateDevices
       // 
+      this.ButtonEnumerateDevices.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
       this.ButtonEnumerateDevices.Location = new System.Drawing.Point(994, 12);
       this.ButtonEnumerateDevices.Name = "ButtonEnumerateDevices";
-      this.ButtonEnumerateDevices.Size = new System.Drawing.Size(40, 33);
+      this.ButtonEnumerateDevices.Size = new System.Drawing.Size(40, 23);
       this.ButtonEnumerateDevices.TabIndex = 2;
       this.ButtonEnumerateDevices.Text = "🔄";
       this.ButtonEnumerateDevices.UseVisualStyleBackColor = true;
@@ -133,7 +134,7 @@ namespace DirectInputExplorer
       this.LabelDeviceInfo.AutoSize = true;
       this.LabelDeviceInfo.Location = new System.Drawing.Point(5, 5);
       this.LabelDeviceInfo.Name = "LabelDeviceInfo";
-      this.LabelDeviceInfo.Size = new System.Drawing.Size(105, 25);
+      this.LabelDeviceInfo.Size = new System.Drawing.Size(69, 15);
       this.LabelDeviceInfo.TabIndex = 3;
       this.LabelDeviceInfo.Text = "Device Info:";
       // 
@@ -147,7 +148,7 @@ namespace DirectInputExplorer
       // 
       this.ButtonAttatch.Location = new System.Drawing.Point(1040, 12);
       this.ButtonAttatch.Name = "ButtonAttatch";
-      this.ButtonAttatch.Size = new System.Drawing.Size(100, 33);
+      this.ButtonAttatch.Size = new System.Drawing.Size(100, 23);
       this.ButtonAttatch.TabIndex = 5;
       this.ButtonAttatch.Text = "Attatch";
       this.ButtonAttatch.UseVisualStyleBackColor = true;
@@ -157,7 +158,7 @@ namespace DirectInputExplorer
       // 
       this.ButtonRemove.Location = new System.Drawing.Point(1146, 12);
       this.ButtonRemove.Name = "ButtonRemove";
-      this.ButtonRemove.Size = new System.Drawing.Size(100, 33);
+      this.ButtonRemove.Size = new System.Drawing.Size(100, 23);
       this.ButtonRemove.TabIndex = 6;
       this.ButtonRemove.Text = "Remove";
       this.ButtonRemove.UseVisualStyleBackColor = true;
@@ -172,10 +173,10 @@ namespace DirectInputExplorer
       this.TabController.Controls.Add(this.TabInput);
       this.TabController.Controls.Add(this.TabFFB);
       this.TabController.Controls.Add(this.TabMisc);
-      this.TabController.Location = new System.Drawing.Point(12, 51);
+      this.TabController.Location = new System.Drawing.Point(12, 41);
       this.TabController.Name = "TabController";
       this.TabController.SelectedIndex = 0;
-      this.TabController.Size = new System.Drawing.Size(1234, 961);
+      this.TabController.Size = new System.Drawing.Size(1234, 665);
       this.TabController.TabIndex = 7;
       // 
       // TabDeviceInfo
@@ -183,9 +184,9 @@ namespace DirectInputExplorer
       this.TabDeviceInfo.Controls.Add(this.LabelDeviceInfo);
       this.TabDeviceInfo.Controls.Add(this.LabelFFBCapabilities);
       this.TabDeviceInfo.Controls.Add(this.LabelCapabilities);
-      this.TabDeviceInfo.Location = new System.Drawing.Point(4, 34);
+      this.TabDeviceInfo.Location = new System.Drawing.Point(4, 24);
       this.TabDeviceInfo.Name = "TabDeviceInfo";
-      this.TabDeviceInfo.Size = new System.Drawing.Size(1226, 923);
+      this.TabDeviceInfo.Size = new System.Drawing.Size(1226, 637);
       this.TabDeviceInfo.TabIndex = 3;
       this.TabDeviceInfo.Text = "Info";
       this.TabDeviceInfo.UseVisualStyleBackColor = true;
@@ -193,10 +194,10 @@ namespace DirectInputExplorer
       // LabelFFBCapabilities
       // 
       this.LabelFFBCapabilities.AutoSize = true;
-      this.LabelFFBCapabilities.Location = new System.Drawing.Point(5, 494);
+      this.LabelFFBCapabilities.Location = new System.Drawing.Point(5, 408);
       this.LabelFFBCapabilities.MaximumSize = new System.Drawing.Size(1226, 0);
       this.LabelFFBCapabilities.Name = "LabelFFBCapabilities";
-      this.LabelFFBCapabilities.Size = new System.Drawing.Size(234, 25);
+      this.LabelFFBCapabilities.Size = new System.Drawing.Size(157, 15);
       this.LabelFFBCapabilities.TabIndex = 4;
       this.LabelFFBCapabilities.Text = "FFBCapabilities: Attatch First";
       // 
@@ -206,17 +207,17 @@ namespace DirectInputExplorer
       this.LabelCapabilities.Location = new System.Drawing.Point(5, 165);
       this.LabelCapabilities.MaximumSize = new System.Drawing.Size(1226, 0);
       this.LabelCapabilities.Name = "LabelCapabilities";
-      this.LabelCapabilities.Size = new System.Drawing.Size(206, 25);
+      this.LabelCapabilities.Size = new System.Drawing.Size(138, 15);
       this.LabelCapabilities.TabIndex = 4;
       this.LabelCapabilities.Text = "Capabilities: Attatch First";
       // 
       // TabInput
       // 
       this.TabInput.Controls.Add(this.LabelInput);
-      this.TabInput.Location = new System.Drawing.Point(4, 34);
+      this.TabInput.Location = new System.Drawing.Point(4, 24);
       this.TabInput.Name = "TabInput";
       this.TabInput.Padding = new System.Windows.Forms.Padding(3);
-      this.TabInput.Size = new System.Drawing.Size(1226, 923);
+      this.TabInput.Size = new System.Drawing.Size(1226, 561);
       this.TabInput.TabIndex = 0;
       this.TabInput.Text = "Input";
       this.TabInput.UseVisualStyleBackColor = true;
@@ -226,7 +227,7 @@ namespace DirectInputExplorer
       this.LabelInput.AutoSize = true;
       this.LabelInput.Location = new System.Drawing.Point(5, 5);
       this.LabelInput.Name = "LabelInput";
-      this.LabelInput.Size = new System.Drawing.Size(152, 25);
+      this.LabelInput.Size = new System.Drawing.Size(101, 15);
       this.LabelInput.TabIndex = 4;
       this.LabelInput.Text = "Input: Attach First";
       // 
@@ -237,10 +238,10 @@ namespace DirectInputExplorer
       this.TabFFB.Controls.Add(this.GBFriction);
       this.TabFFB.Controls.Add(this.GBDamper);
       this.TabFFB.Controls.Add(this.GBConstantForce);
-      this.TabFFB.Location = new System.Drawing.Point(4, 34);
+      this.TabFFB.Location = new System.Drawing.Point(4, 24);
       this.TabFFB.Name = "TabFFB";
       this.TabFFB.Padding = new System.Windows.Forms.Padding(3);
-      this.TabFFB.Size = new System.Drawing.Size(1226, 923);
+      this.TabFFB.Size = new System.Drawing.Size(1226, 561);
       this.TabFFB.TabIndex = 1;
       this.TabFFB.Text = "FFB";
       this.TabFFB.UseVisualStyleBackColor = true;
@@ -274,7 +275,7 @@ namespace DirectInputExplorer
       this.CBSpring.AutoSize = true;
       this.CBSpring.Location = new System.Drawing.Point(0, 3);
       this.CBSpring.Name = "CBSpring";
-      this.CBSpring.Size = new System.Drawing.Size(22, 21);
+      this.CBSpring.Size = new System.Drawing.Size(15, 14);
       this.CBSpring.TabIndex = 1;
       this.CBSpring.Tag = "Spring";
       this.CBSpring.UseVisualStyleBackColor = true;
@@ -300,7 +301,7 @@ namespace DirectInputExplorer
             0,
             -2147483648});
       this.UDSpringDeadband.Name = "UDSpringDeadband";
-      this.UDSpringDeadband.Size = new System.Drawing.Size(96, 31);
+      this.UDSpringDeadband.Size = new System.Drawing.Size(96, 23);
       this.UDSpringDeadband.TabIndex = 2;
       this.UDSpringDeadband.Tag = "SpringDeadband";
       this.UDSpringDeadband.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
@@ -320,7 +321,7 @@ namespace DirectInputExplorer
             0,
             0});
       this.UDSpringSaturation.Name = "UDSpringSaturation";
-      this.UDSpringSaturation.Size = new System.Drawing.Size(96, 31);
+      this.UDSpringSaturation.Size = new System.Drawing.Size(96, 23);
       this.UDSpringSaturation.TabIndex = 2;
       this.UDSpringSaturation.Tag = "SpringSaturation";
       this.UDSpringSaturation.Value = new decimal(new int[] {
@@ -350,7 +351,7 @@ namespace DirectInputExplorer
             0,
             -2147483648});
       this.UDSpringCoefficient.Name = "UDSpringCoefficient";
-      this.UDSpringCoefficient.Size = new System.Drawing.Size(96, 31);
+      this.UDSpringCoefficient.Size = new System.Drawing.Size(96, 23);
       this.UDSpringCoefficient.TabIndex = 2;
       this.UDSpringCoefficient.Tag = "SpringCoefficient";
       this.UDSpringCoefficient.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
@@ -375,7 +376,7 @@ namespace DirectInputExplorer
             0,
             -2147483648});
       this.UDSpringOffset.Name = "UDSpringOffset";
-      this.UDSpringOffset.Size = new System.Drawing.Size(96, 31);
+      this.UDSpringOffset.Size = new System.Drawing.Size(96, 23);
       this.UDSpringOffset.TabIndex = 2;
       this.UDSpringOffset.Tag = "SpringOffset";
       this.UDSpringOffset.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
@@ -400,7 +401,7 @@ namespace DirectInputExplorer
       this.LabelSpringDeadband.AutoSize = true;
       this.LabelSpringDeadband.Location = new System.Drawing.Point(6, 143);
       this.LabelSpringDeadband.Name = "LabelSpringDeadband";
-      this.LabelSpringDeadband.Size = new System.Drawing.Size(99, 25);
+      this.LabelSpringDeadband.Size = new System.Drawing.Size(64, 15);
       this.LabelSpringDeadband.TabIndex = 3;
       this.LabelSpringDeadband.Tag = "SpringDeadband";
       this.LabelSpringDeadband.Text = "Deadband:";
@@ -427,7 +428,7 @@ namespace DirectInputExplorer
       this.LabelSpringSaturation.AutoSize = true;
       this.LabelSpringSaturation.Location = new System.Drawing.Point(6, 106);
       this.LabelSpringSaturation.Name = "LabelSpringSaturation";
-      this.LabelSpringSaturation.Size = new System.Drawing.Size(97, 25);
+      this.LabelSpringSaturation.Size = new System.Drawing.Size(64, 15);
       this.LabelSpringSaturation.TabIndex = 3;
       this.LabelSpringSaturation.Tag = "SpringSaturation";
       this.LabelSpringSaturation.Text = "Saturation:";
@@ -454,7 +455,7 @@ namespace DirectInputExplorer
       this.LabelSpringCoefficient.AutoSize = true;
       this.LabelSpringCoefficient.Location = new System.Drawing.Point(6, 69);
       this.LabelSpringCoefficient.Name = "LabelSpringCoefficient";
-      this.LabelSpringCoefficient.Size = new System.Drawing.Size(100, 25);
+      this.LabelSpringCoefficient.Size = new System.Drawing.Size(68, 15);
       this.LabelSpringCoefficient.TabIndex = 3;
       this.LabelSpringCoefficient.Tag = "SpringCoefficient";
       this.LabelSpringCoefficient.Text = "Coefficient:";
@@ -481,7 +482,7 @@ namespace DirectInputExplorer
       this.LabelSpringOffset.AutoSize = true;
       this.LabelSpringOffset.Location = new System.Drawing.Point(6, 32);
       this.LabelSpringOffset.Name = "LabelSpringOffset";
-      this.LabelSpringOffset.Size = new System.Drawing.Size(65, 25);
+      this.LabelSpringOffset.Size = new System.Drawing.Size(42, 15);
       this.LabelSpringOffset.TabIndex = 3;
       this.LabelSpringOffset.Tag = "SpringOffset";
       this.LabelSpringOffset.Text = "Offset:";
@@ -507,7 +508,7 @@ namespace DirectInputExplorer
       this.CBInertia.AutoSize = true;
       this.CBInertia.Location = new System.Drawing.Point(0, 3);
       this.CBInertia.Name = "CBInertia";
-      this.CBInertia.Size = new System.Drawing.Size(22, 21);
+      this.CBInertia.Size = new System.Drawing.Size(15, 14);
       this.CBInertia.TabIndex = 1;
       this.CBInertia.Tag = "Inertia";
       this.CBInertia.UseVisualStyleBackColor = true;
@@ -533,7 +534,7 @@ namespace DirectInputExplorer
             0,
             -2147483648});
       this.UDInertiaMagnitude.Name = "UDInertiaMagnitude";
-      this.UDInertiaMagnitude.Size = new System.Drawing.Size(96, 31);
+      this.UDInertiaMagnitude.Size = new System.Drawing.Size(96, 23);
       this.UDInertiaMagnitude.TabIndex = 2;
       this.UDInertiaMagnitude.Tag = "InertiaMagnitude";
       this.UDInertiaMagnitude.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
@@ -543,7 +544,7 @@ namespace DirectInputExplorer
       this.LabelInertiaMagnitude.AutoSize = true;
       this.LabelInertiaMagnitude.Location = new System.Drawing.Point(6, 32);
       this.LabelInertiaMagnitude.Name = "LabelInertiaMagnitude";
-      this.LabelInertiaMagnitude.Size = new System.Drawing.Size(102, 25);
+      this.LabelInertiaMagnitude.Size = new System.Drawing.Size(68, 15);
       this.LabelInertiaMagnitude.TabIndex = 3;
       this.LabelInertiaMagnitude.Tag = "InertiaMagnitude";
       this.LabelInertiaMagnitude.Text = "Magnitude:";
@@ -600,7 +601,7 @@ namespace DirectInputExplorer
             0,
             -2147483648});
       this.UDFrictionMagnitude.Name = "UDFrictionMagnitude";
-      this.UDFrictionMagnitude.Size = new System.Drawing.Size(96, 31);
+      this.UDFrictionMagnitude.Size = new System.Drawing.Size(96, 23);
       this.UDFrictionMagnitude.TabIndex = 2;
       this.UDFrictionMagnitude.Tag = "FrictionMagnitude";
       this.UDFrictionMagnitude.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
@@ -610,7 +611,7 @@ namespace DirectInputExplorer
       this.CBFriction.AutoSize = true;
       this.CBFriction.Location = new System.Drawing.Point(0, 3);
       this.CBFriction.Name = "CBFriction";
-      this.CBFriction.Size = new System.Drawing.Size(22, 21);
+      this.CBFriction.Size = new System.Drawing.Size(15, 14);
       this.CBFriction.TabIndex = 1;
       this.CBFriction.Tag = "Friction";
       this.CBFriction.UseVisualStyleBackColor = true;
@@ -621,7 +622,7 @@ namespace DirectInputExplorer
       this.LabelFrictionMagnitude.AutoSize = true;
       this.LabelFrictionMagnitude.Location = new System.Drawing.Point(6, 32);
       this.LabelFrictionMagnitude.Name = "LabelFrictionMagnitude";
-      this.LabelFrictionMagnitude.Size = new System.Drawing.Size(102, 25);
+      this.LabelFrictionMagnitude.Size = new System.Drawing.Size(68, 15);
       this.LabelFrictionMagnitude.TabIndex = 3;
       this.LabelFrictionMagnitude.Tag = "FrictionMagnitude";
       this.LabelFrictionMagnitude.Text = "Magnitude:";
@@ -678,7 +679,7 @@ namespace DirectInputExplorer
             0,
             -2147483648});
       this.UDDamperMagnitude.Name = "UDDamperMagnitude";
-      this.UDDamperMagnitude.Size = new System.Drawing.Size(96, 31);
+      this.UDDamperMagnitude.Size = new System.Drawing.Size(96, 23);
       this.UDDamperMagnitude.TabIndex = 2;
       this.UDDamperMagnitude.Tag = "DamperMagnitude";
       this.UDDamperMagnitude.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
@@ -688,7 +689,7 @@ namespace DirectInputExplorer
       this.LabelDamperMagnitude.AutoSize = true;
       this.LabelDamperMagnitude.Location = new System.Drawing.Point(6, 32);
       this.LabelDamperMagnitude.Name = "LabelDamperMagnitude";
-      this.LabelDamperMagnitude.Size = new System.Drawing.Size(102, 25);
+      this.LabelDamperMagnitude.Size = new System.Drawing.Size(68, 15);
       this.LabelDamperMagnitude.TabIndex = 3;
       this.LabelDamperMagnitude.Tag = "DamperMagnitude";
       this.LabelDamperMagnitude.Text = "Magnitude:";
@@ -699,7 +700,7 @@ namespace DirectInputExplorer
       this.CBDamper.AutoSize = true;
       this.CBDamper.Location = new System.Drawing.Point(0, 3);
       this.CBDamper.Name = "CBDamper";
-      this.CBDamper.Size = new System.Drawing.Size(22, 21);
+      this.CBDamper.Size = new System.Drawing.Size(15, 14);
       this.CBDamper.TabIndex = 1;
       this.CBDamper.Tag = "Damper";
       this.CBDamper.UseVisualStyleBackColor = true;
@@ -741,7 +742,7 @@ namespace DirectInputExplorer
       this.CBConstantForce.AutoSize = true;
       this.CBConstantForce.Location = new System.Drawing.Point(0, 3);
       this.CBConstantForce.Name = "CBConstantForce";
-      this.CBConstantForce.Size = new System.Drawing.Size(22, 21);
+      this.CBConstantForce.Size = new System.Drawing.Size(15, 14);
       this.CBConstantForce.TabIndex = 1;
       this.CBConstantForce.Tag = "ConstantForce";
       this.CBConstantForce.UseVisualStyleBackColor = true;
@@ -767,7 +768,7 @@ namespace DirectInputExplorer
             0,
             -2147483648});
       this.UDConstantForceMagnitude.Name = "UDConstantForceMagnitude";
-      this.UDConstantForceMagnitude.Size = new System.Drawing.Size(96, 31);
+      this.UDConstantForceMagnitude.Size = new System.Drawing.Size(96, 23);
       this.UDConstantForceMagnitude.TabIndex = 2;
       this.UDConstantForceMagnitude.Tag = "ConstantForceMagnitude";
       this.UDConstantForceMagnitude.ValueChanged += new System.EventHandler(this.FFB_UpDown_ValueChanged);
@@ -777,7 +778,7 @@ namespace DirectInputExplorer
       this.LabelConstantForceMagnitude.AutoSize = true;
       this.LabelConstantForceMagnitude.Location = new System.Drawing.Point(6, 32);
       this.LabelConstantForceMagnitude.Name = "LabelConstantForceMagnitude";
-      this.LabelConstantForceMagnitude.Size = new System.Drawing.Size(102, 25);
+      this.LabelConstantForceMagnitude.Size = new System.Drawing.Size(68, 15);
       this.LabelConstantForceMagnitude.TabIndex = 3;
       this.LabelConstantForceMagnitude.Tag = "ConstantForceMagnitude";
       this.LabelConstantForceMagnitude.Text = "Magnitude:";
@@ -803,10 +804,10 @@ namespace DirectInputExplorer
       // 
       this.TabMisc.Controls.Add(this.LabelDebug);
       this.TabMisc.Controls.Add(this.ButtonDebug);
-      this.TabMisc.Location = new System.Drawing.Point(4, 34);
+      this.TabMisc.Location = new System.Drawing.Point(4, 24);
       this.TabMisc.Name = "TabMisc";
       this.TabMisc.Padding = new System.Windows.Forms.Padding(3);
-      this.TabMisc.Size = new System.Drawing.Size(1226, 923);
+      this.TabMisc.Size = new System.Drawing.Size(1226, 561);
       this.TabMisc.TabIndex = 4;
       this.TabMisc.Text = "Misc";
       this.TabMisc.UseVisualStyleBackColor = true;
@@ -816,7 +817,7 @@ namespace DirectInputExplorer
       this.LabelDebug.AutoSize = true;
       this.LabelDebug.Location = new System.Drawing.Point(6, 3);
       this.LabelDebug.Name = "LabelDebug";
-      this.LabelDebug.Size = new System.Drawing.Size(112, 25);
+      this.LabelDebug.Size = new System.Drawing.Size(73, 15);
       this.LabelDebug.TabIndex = 1;
       this.LabelDebug.Text = "Debug Stuff:";
       // 
@@ -832,7 +833,7 @@ namespace DirectInputExplorer
       // 
       // Form1
       // 
-      this.ClientSize = new System.Drawing.Size(1258, 1024);
+      this.ClientSize = new System.Drawing.Size(1258, 718);
       this.Controls.Add(this.TabController);
       this.Controls.Add(this.ButtonRemove);
       this.Controls.Add(this.ButtonAttatch);
