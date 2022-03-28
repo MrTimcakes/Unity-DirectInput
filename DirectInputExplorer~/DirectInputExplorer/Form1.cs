@@ -49,7 +49,7 @@ namespace DirectInputExplorer {
       UpdateReadoutsWithDeviceData(DIManager.devices[ComboBoxDevices.SelectedIndex]);
     }
 
-    private void ButtonAttatch_Click(object sender, EventArgs e) {
+    private void ButtonAttach_Click(object sender, EventArgs e) {
       DeviceInfo targetDevice = DIManager.devices[ComboBoxDevices.SelectedIndex];
       DIManager.Attach(targetDevice); // Connect to device
       UpdateReadoutsWithDeviceData(DIManager.devices[ComboBoxDevices.SelectedIndex]);
@@ -212,9 +212,9 @@ namespace DirectInputExplorer {
         }
 
       } else { // Device isn't attached, default readouts
-        LabelInput.Text = "Input: Attatch First";
-        LabelCapabilities.Text = "Capabilities: Attatch First";
-        LabelFFBCapabilities.Text = "FFBCapabilities: Attatch First";
+        LabelInput.Text = "Input: Attach First";
+        LabelCapabilities.Text = "Capabilities: Attach First";
+        LabelFFBCapabilities.Text = "FFBCapabilities: Attach First";
         (TabController.TabPages["TabInput"] as TabPage).Enabled = false;
         (TabController.TabPages["TabFFB"]   as TabPage).Enabled = false;
       }

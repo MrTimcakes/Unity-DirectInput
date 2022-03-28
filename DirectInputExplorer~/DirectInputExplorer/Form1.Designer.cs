@@ -34,7 +34,7 @@ namespace DirectInputExplorer
       this.ButtonEnumerateDevices = new System.Windows.Forms.Button();
       this.LabelDeviceInfo = new System.Windows.Forms.Label();
       this.TimerPoll = new System.Windows.Forms.Timer(this.components);
-      this.ButtonAttatch = new System.Windows.Forms.Button();
+      this.ButtonAttach = new System.Windows.Forms.Button();
       this.ButtonRemove = new System.Windows.Forms.Button();
       this.TabController = new System.Windows.Forms.TabControl();
       this.TabDeviceInfo = new System.Windows.Forms.TabPage();
@@ -144,15 +144,15 @@ namespace DirectInputExplorer
       this.TimerPoll.Interval = 20;
       this.TimerPoll.Tick += new System.EventHandler(this.TimerPoll_Tick_1);
       // 
-      // ButtonAttatch
+      // ButtonAttach
       // 
-      this.ButtonAttatch.Location = new System.Drawing.Point(1040, 12);
-      this.ButtonAttatch.Name = "ButtonAttatch";
-      this.ButtonAttatch.Size = new System.Drawing.Size(100, 23);
-      this.ButtonAttatch.TabIndex = 5;
-      this.ButtonAttatch.Text = "Attatch";
-      this.ButtonAttatch.UseVisualStyleBackColor = true;
-      this.ButtonAttatch.Click += new System.EventHandler(this.ButtonAttatch_Click);
+      this.ButtonAttach.Location = new System.Drawing.Point(1040, 12);
+      this.ButtonAttach.Name = "ButtonAttach";
+      this.ButtonAttach.Size = new System.Drawing.Size(100, 23);
+      this.ButtonAttach.TabIndex = 5;
+      this.ButtonAttach.Text = "Attach";
+      this.ButtonAttach.UseVisualStyleBackColor = true;
+      this.ButtonAttach.Click += new System.EventHandler(this.ButtonAttach_Click);
       // 
       // ButtonRemove
       // 
@@ -217,7 +217,7 @@ namespace DirectInputExplorer
       this.TabInput.Location = new System.Drawing.Point(4, 24);
       this.TabInput.Name = "TabInput";
       this.TabInput.Padding = new System.Windows.Forms.Padding(3);
-      this.TabInput.Size = new System.Drawing.Size(1226, 561);
+      this.TabInput.Size = new System.Drawing.Size(1226, 637);
       this.TabInput.TabIndex = 0;
       this.TabInput.Text = "Input";
       this.TabInput.UseVisualStyleBackColor = true;
@@ -241,7 +241,7 @@ namespace DirectInputExplorer
       this.TabFFB.Location = new System.Drawing.Point(4, 24);
       this.TabFFB.Name = "TabFFB";
       this.TabFFB.Padding = new System.Windows.Forms.Padding(3);
-      this.TabFFB.Size = new System.Drawing.Size(1226, 561);
+      this.TabFFB.Size = new System.Drawing.Size(1226, 637);
       this.TabFFB.TabIndex = 1;
       this.TabFFB.Text = "FFB";
       this.TabFFB.UseVisualStyleBackColor = true;
@@ -807,7 +807,7 @@ namespace DirectInputExplorer
       this.TabMisc.Location = new System.Drawing.Point(4, 24);
       this.TabMisc.Name = "TabMisc";
       this.TabMisc.Padding = new System.Windows.Forms.Padding(3);
-      this.TabMisc.Size = new System.Drawing.Size(1226, 561);
+      this.TabMisc.Size = new System.Drawing.Size(1226, 637);
       this.TabMisc.TabIndex = 4;
       this.TabMisc.Text = "Misc";
       this.TabMisc.UseVisualStyleBackColor = true;
@@ -836,7 +836,7 @@ namespace DirectInputExplorer
       this.ClientSize = new System.Drawing.Size(1258, 718);
       this.Controls.Add(this.TabController);
       this.Controls.Add(this.ButtonRemove);
-      this.Controls.Add(this.ButtonAttatch);
+      this.Controls.Add(this.ButtonAttach);
       this.Controls.Add(this.ButtonEnumerateDevices);
       this.Controls.Add(this.ComboBoxDevices);
       this.Name = "Form1";
@@ -886,7 +886,7 @@ namespace DirectInputExplorer
     private System.Windows.Forms.Button ButtonEnumerateDevices;
     private System.Windows.Forms.Label LabelDeviceInfo;
     private System.Windows.Forms.Timer TimerPoll;
-    private System.Windows.Forms.Button ButtonAttatch;
+    private System.Windows.Forms.Button ButtonAttach;
     private System.Windows.Forms.Button ButtonRemove;
     private System.Windows.Forms.TabControl TabController;
     private System.Windows.Forms.TabPage TabDeviceInfo;
