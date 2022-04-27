@@ -234,7 +234,6 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
   [RuntimeInitializeOnLoadMethod]
   private static void Initialize(){
     DIManager.Initialize();                                                                               // Start DirectInput if it's not already
-    Debug.Log($"Device Count: {DIManager.devices.Length}");
     DIManager.EnumerateDevices();                                                                         // Scan for available devices 
     // await DIManager.EnumerateDevicesAsync();                                                           // Async allows to detect enumeration issues but causes issues with domain reloads as await yields and processes devices before layouts can be built
     DIManager.OnDeviceAdded += DIDeviceAdded;                                                             // Register handler for when a device is attached
