@@ -106,6 +106,8 @@ namespace DirectInputManager {
           IntPtr pCurrent = ptrDevices + i * deviceSize; // Ptr to the current device
           _devices[i] = Marshal.PtrToStructure<DeviceInfo>(pCurrent); // Transform the Ptr into a C# instance of DeviceInfo
         }
+      }else{
+        _devices = new DeviceInfo[0]; // empty _devices when no devices are present
       }
       return;
     }
