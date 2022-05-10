@@ -307,12 +307,15 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
       InputSystem.QueueStateEvent(ISDevice, ISState);                                                      // Notify InputSystem with updated state
   }
 
+  #if UNITY_EDITOR
   [MenuItem("FFBDev/Add All DI Devices To IS")]
+  #endif
   private static void AddAllDIDevicesToIS(){
     foreach (DeviceInfo device in DIManager.devices)
       AddDIDeviceToIS(device);
   }
 
+  #if UNITY_EDITOR
   [MenuItem("FFBDev/Remove All Devices From IS")]
   private static void RemoveAllDevices(){
     while(InputSystem.devices.OfType<DirectInputDevice>().Any()){
@@ -326,6 +329,7 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
       InputSystem.RemoveLayout($"DI_{device.productName}");
     }
   }
+  #endif
 }
 
 //////////////////////////////////////////////////////////////
