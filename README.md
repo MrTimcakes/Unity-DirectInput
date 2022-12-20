@@ -1,14 +1,16 @@
 # Unity DirectInput Force Feedback
-> Unity Native Plugin to expose DirectX DirectInput ForceFeedback
 
 [![Made with Unity](https://img.shields.io/badge/Made%20with-Unity-57b9d3.svg?style=for-the-badge&logo=unity)](https://unity3d.com)
-![GitHub issues](https://img.shields.io/github/issues/MrTimcakes/Unity-DirectInput?style=for-the-badge)
+![GitHub issues open](https://img.shields.io/github/issues/MrTimcakes/Unity-DirectInput?style=for-the-badge)
+![GitHub issues close](https://img.shields.io/github/issues-closed/MrTimcakes/Unity-DirectInput?style=for-the-badge)
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/MrTimcakes/Unity-DirectInput?style=for-the-badge)
 ![GitHub](https://img.shields.io/github/license/MrTimcakes/Unity-DirectInput?style=for-the-badge)
 
+![Unity-DirectInput Banner](https://github.com/MrTimcakes/Unity-DirectInput/blob/assets/UnityDirectInputBanner.png )
+
 This package allows you to easily integrate both the input and ForceFeedback features of DirectX DirectInput from within Unity. This allows you to interface with HID peripherals with ForceFeedback capabilities. This can be used to build vivid simulated experiences.
 
-The package will create a virtual device inside Unity's Input System. This device can then be used like any other device inside the Input System, allowing for easiy rebinding. ForceFeedback capabilites can be acceced via the DIManager class.
+The package will create a virtual device inside Unity's Input System. This device can then be used like any other device inside the Input System, allowing for easy rebinding. ForceFeedback capabilites can be accessed via the DIManager class. The [DirectInputExplorer](../../tree/main/DirectInputExplorer~) is a windows forms application built in parallel with the C++ library to enable quick development by avoiding the need to reload Unity after every change. It also functions as an easy way to examine DirectInput devices.
 
 # Quick Start
 
@@ -53,7 +55,8 @@ Next, install this package:
 | [Fanatec CSL LC Pedals](https://fanatec.com/eu-en/pedals/csl-elite-pedals) | ✅ Verified    |
 | [Fanatec ClubSport Pedals V3](https://fanatec.com/eu-en/pedals/clubsport-pedals-v3) | ✅ Verified    |
 | [Fanatec ClubSport Shifter SQ V 1.5](https://fanatec.com/eu-en/shifters-others/clubsport-shifter-sq-v-1.5) | ✅ Verified    |
-| Logitech G29 / G920 | 🔲 Untested    |
+| [Logitech G29 / G920](https://www.logitechg.com/en-gb/products/driving/driving-force-racing-wheel.html) | ✅ Verified    |
+| [PRO Racing Wheel](https://www.logitechg.com/en-gb/products/driving/pro-racing-wheel.html) | 🔲 Untested    |
 
 [comment]: <> (✅ 🔲)
 
@@ -62,11 +65,11 @@ Next, install this package:
 
 This plugin only works on Windows 64 bit.
 
-Unity Version: 2021.1.16f1
+Latest verified Unity version: 2022.2.1f1
 
 # Notice
 
-Occasionally calls to EnumerateDevices will take orders of magnitude longer than usual to execute (up to 60 seconds), this is caused by a Windows bug attempting to load an absent hardware device. USB Audio DACs & Corsair keyboards are known the cause this issue, try disconnecting and reconnecting offending USB devices. For more information see [this](https://stackoverflow.com/questions/10967795/directinput8-enumdevices-sometimes-painfully-slow) StackOverflow post about the issue from 2012.
+Occasionally calls to EnumerateDevices will take orders of magnitude longer than usual to execute (up to 60 seconds), this is caused by a Windows bug attempting to load an absent hardware device. USB Audio DACs & Corsair keyboards are known the cause this issue, try disconnecting and reconnecting offending USB devices. For more information see [this](https://stackoverflow.com/questions/10967795/directinput8-enumdevices-sometimes-painfully-slow) StackOverflow post about the issue from 2012. See issue [#1](/../../issues/1) for more info.
 
 # Support
 
@@ -74,4 +77,4 @@ If you're having any problem, please [raise an issue](https://github.com/MrTimca
 
 # License
 
-This project is free Open-Source software, and is released under the GPL-3.0 License, further information can be found under the terms specified in the [license](https://github.com/MrTimcakes/Unity-DirectInput/blob/master/LICENSE).
+This project is free Open-Source software, and is released under the LGPL-3.0 License, further information can be found under the terms specified in the [license](/../../blob/main/LICENSE).
