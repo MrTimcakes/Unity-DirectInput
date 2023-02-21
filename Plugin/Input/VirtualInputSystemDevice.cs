@@ -286,13 +286,13 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
   }
 
   public static void DIDeviceAdded(DeviceInfo device){
-    Debug.Log($"[DirectInputManager] DIDeviceAdded: {device.productName}  {device.guidProduct}");
+    Debug.Log($"<color=#9416f9>[DirectInputManager]</color> <color=#6affff>DIDeviceAdded: {device.productName} : {device.guidProduct}</color>");
     GenerateISLayouts();                                                                                   // Ensure a layout is ready for the new device
     AddDIDeviceToIS(device);                                                                               // Add device to IS
   }
 
   protected void DIDeviceRemoved(DeviceInfo device){
-    Debug.Log($"[DirectInputManager] Remove Called! D:{device.productName}");
+    Debug.Log($"<color=#9416f9>[DirectInputManager]</color> <color=#ff0000>DIDeviceRemoved: {device.productName} : {device.guidProduct}</color>");
     InputSystem.RemoveDevice(this);                                                                        // Remove device from InputSystem, DIManager handles destroying the device for us :)
   }
   
@@ -306,30 +306,35 @@ public class DirectInputDevice : InputDevice, IInputUpdateCallbackReceiver{
     if (ISDevice != null)
       InputSystem.QueueStateEvent(ISDevice, ISState);                                                      // Notify InputSystem with updated state
   }
-
-  #if UNITY_EDITOR
-  [MenuItem("FFBDev/Add All DI Devices To IS")]
-  #endif
+  
   private static void AddAllDIDevicesToIS(){
     foreach (DeviceInfo device in DIManager.devices)
       AddDIDeviceToIS(device);
   }
 
-  #if UNITY_EDITOR
-  [MenuItem("FFBDev/Remove All Devices From IS")]
-  private static void RemoveAllDevices(){
-    while(InputSystem.devices.OfType<DirectInputDevice>().Any()){
-      InputSystem.RemoveDevice(InputSystem.devices.OfType<DirectInputDevice>().First());
-    }
-  }
+  // #if UNITY_EDITOR
+  // [MenuItem("FFBDev/Add All DI Devices To IS")]
+  // #endif
+  // private static void AddAllDIDevicesToIS(){
+  //   foreach (DeviceInfo device in DIManager.devices)
+  //     AddDIDeviceToIS(device);
+  // }
 
-  [MenuItem("FFBDev/Remove All Layouts From IS")]
-  private static void RemoveAllLayouts(){
-    foreach (DeviceInfo device in DIManager.devices){
-      InputSystem.RemoveLayout($"DI_{device.productName}");
-    }
-  }
-  #endif
+  // #if UNITY_EDITOR
+  // [MenuItem("FFBDev/Remove All Devices From IS")]
+  // private static void RemoveAllDevices(){
+  //   while(InputSystem.devices.OfType<DirectInputDevice>().Any()){
+  //     InputSystem.RemoveDevice(InputSystem.devices.OfType<DirectInputDevice>().First());
+  //   }
+  // }
+
+  // [MenuItem("FFBDev/Remove All Layouts From IS")]
+  // private static void RemoveAllLayouts(){
+  //   foreach (DeviceInfo device in DIManager.devices){
+  //     InputSystem.RemoveLayout($"DI_{device.productName}");
+  //   }
+  // }
+  // #endif
 }
 
 //////////////////////////////////////////////////////////////

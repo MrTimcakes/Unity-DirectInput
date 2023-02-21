@@ -39,7 +39,7 @@ namespace DirectInputManager {
     [UnmanagedFunctionPointer(CallingConvention.StdCall)] public delegate void DeviceChangeCallback(DBTEvents DBTEvent);
     [DllImport(DLLFile)] public static extern void SetDeviceChangeCallback([MarshalAs(UnmanagedType.FunctionPtr)] DeviceChangeCallback onDeviceChange);
 
-    [DllImport(DLLFile)] public static extern int DEBUG1([MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] DEBUGDATA);
+    // [DllImport(DLLFile)] public static extern int DEBUG1([MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_BSTR)] out string[] DEBUGDATA);
   }
   public class DIManager {
     //////////////////////////////////////////////////////////////
@@ -50,12 +50,12 @@ namespace DirectInputManager {
     const string DLLFile = @"DirectInputForceFeedback.dll";
     private static uint ClampAgnostic(uint value, uint min, uint max) => (uint)Mathf.Clamp(value, min, max);
     private static int ClampAgnostic(int value, int min, int max) => Mathf.Clamp(value, min, max);
-    private static void DebugLog(string message) => Debug.Log(message);
+    private static void DebugLog(string message) => Debug.Log($"<color=#9416f9>[DirectInputManager]</color> <color=#ff0000>{message}</color>");
 #else
     const string DLLFile = @"..\..\..\..\..\Plugin\DLL\DirectInputForceFeedback.dll";
     private static uint ClampAgnostic(uint value, uint min, uint max) => Math.Clamp(value, min, max);
     private static int ClampAgnostic(int value, int min, int max) => Math.Clamp(value, min, max);
-    private static void DebugLog(string message) => System.Diagnostics.Debug.WriteLine(message);
+    private static void DebugLog(string message) => System.Diagnostics.Debug.WriteLine($"[DirectInputManager]{message}");
 #endif
 
     //////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ namespace DirectInputManager {
       Task warningTimeout  = Task.Delay(1000);
       
       if (warningTimeout == await Task.WhenAny(enumDevicesTask, warningTimeout)) {
-        DebugLog($"[DirectInputManager] Warning EnumerateDevices is taking longer than expected!");
+        DebugLog($"Warning EnumerateDevices is taking longer than expected!");
         await enumDevicesTask; // Continue to wait for EnumerateDevices
       }
     }
@@ -131,7 +131,7 @@ namespace DirectInputManager {
     public static bool Attach(string guidInstance) {
       if (_activeDevices.ContainsKey(guidInstance)) { return true; } // We're already attached to that device
       int hresult = Native.CreateDevice(guidInstance);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] CreateDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)} {guidInstance}"); return false; }
+      if (hresult != 0) { DebugLog($"CreateDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)} {guidInstance}"); return false; }
       DeviceInfo device = _devices.Where(device => device.guidInstance == guidInstance).First();
       _activeDevices.Add(guidInstance, new ActiveDeviceInfo(){ deviceInfo = device }); // Add device to our C# active device tracker (Dictionary allows us to easily check if GUID already exists)
       return true;
@@ -148,7 +148,7 @@ namespace DirectInputManager {
       if (!_activeDevices.ContainsKey(guidInstance)) { return true; } // We don't think we're attached to that device, consider it removed
       int hresult = Native.DestroyDevice(guidInstance);
       _activeDevices.Remove(guidInstance); // remove from our C# active device tracker
-      if (hresult != 0) { DebugLog($"[DirectInputManager] DestroyDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"DestroyDevice Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -161,7 +161,7 @@ namespace DirectInputManager {
     public static FlatJoyState2 GetDeviceState(string guidInstance) {
       FlatJoyState2 DeviceState = new FlatJoyState2();
       int hresult = Native.GetDeviceState(guidInstance, out DeviceState);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] GetDeviceState Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+      if (hresult != 0) { DebugLog($"GetDeviceState Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
       return DeviceState;
     }
 
@@ -179,7 +179,7 @@ namespace DirectInputManager {
     public static DIJOYSTATE2 GetDeviceStateRaw(string guidInstance) {
       DIJOYSTATE2 DeviceState = new DIJOYSTATE2();
       int hresult = Native.GetDeviceStateRaw(guidInstance, out DeviceState);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] GetDeviceStateRaw Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+      if (hresult != 0) { DebugLog($"GetDeviceStateRaw Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
       return DeviceState;
     }
 
@@ -193,9 +193,9 @@ namespace DirectInputManager {
       string[] ActiveGUIDs = null;
       int hresult = Native.GetActiveDevices(out ActiveGUIDs);
       //if (hresult != 0) { Debug.LogError($"[DirectInputManager] GetActiveDevices Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
-      if (hresult != 0) { DebugLog($"[DirectInputManager] GetActiveDevices Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+      if (hresult != 0) { DebugLog($"GetActiveDevices Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
 
-      if (ActiveGUIDs.Length != _activeDevices.Count) { DebugLog($"[DirectInputManager] Active Device mismatch! DLL:{ActiveGUIDs.Length}, DIManager:{_activeDevices.Count}"); }
+      if (ActiveGUIDs.Length != _activeDevices.Count) { DebugLog($"Active Device mismatch! DLL:{ActiveGUIDs.Length}, DIManager:{_activeDevices.Count}"); }
 
       return ActiveGUIDs;
     }
@@ -210,7 +210,7 @@ namespace DirectInputManager {
     public static DIDEVCAPS GetDeviceCapabilities(string guidInstance) {
       DIDEVCAPS DeviceCapabilities = new DIDEVCAPS();
       int hresult = Native.GetDeviceCapabilities(guidInstance, out DeviceCapabilities);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] GetDeviceCapabilities Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+      if (hresult != 0) { DebugLog($"GetDeviceCapabilities Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
       return DeviceCapabilities;
     }
 
@@ -244,7 +244,7 @@ namespace DirectInputManager {
     /// </returns>
     public static bool EnableFFBEffect(string guidInstance, FFBEffects effectType) {
       int hresult = Native.CreateFFBEffect(guidInstance, effectType);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] CreateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"CreateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -257,7 +257,7 @@ namespace DirectInputManager {
     /// </returns>
     public static bool DestroyFFBEffect(string guidInstance, FFBEffects effectType) {
       int hresult = Native.DestroyFFBEffect(guidInstance, effectType);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] DestroyFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"DestroyFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -270,7 +270,7 @@ namespace DirectInputManager {
     public static string[] GetDeviceFFBCapabilities(string guidInstance) {
       string[] SupportedFFBEffects = null;
       int hresult = Native.EnumerateFFBEffects(guidInstance, out SupportedFFBEffects);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] GetDeviceFFBCapabilities Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+      if (hresult != 0) { DebugLog($"GetDeviceFFBCapabilities Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
       return SupportedFFBEffects;
     }
 
@@ -283,7 +283,7 @@ namespace DirectInputManager {
     /// </returns>
     public static bool StopAllFFBEffects(string guidInstance) {
       int hresult = Native.StopAllFFBEffects(guidInstance);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] StopAllFFBEffects Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"StopAllFFBEffects Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -295,7 +295,7 @@ namespace DirectInputManager {
     /// </returns>
     public static bool StopDirectInput() {
       int hresult = Native.StopDirectInput();
-      if (hresult != 0) { DebugLog($"[DirectInputManager] StopDirectInput Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"StopDirectInput Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -371,14 +371,14 @@ namespace DirectInputManager {
     /// *Internal use only*
     /// Used to test C++ code in the DLL during devlopment
     /// </summary>
-    public static string[] DEBUG1() {
-      string[] DEBUGDATA = null;
-      DEBUGDATA = new string[1] { "Test" };
-      int hresult = Native.DEBUG1(out DEBUGDATA);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] DEBUG1 Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
+    // public static string[] DEBUG1() {
+    //   string[] DEBUGDATA = null;
+    //   DEBUGDATA = new string[1] { "Test" };
+    //   int hresult = Native.DEBUG1(out DEBUGDATA);
+    //   if (hresult != 0) { DebugLog($"DEBUG1 Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); /*return false;*/ }
 
-      return DEBUGDATA;
-    }
+    //   return DEBUGDATA;
+    // }
 
 
     //////////////////////////////////////////////////////////////
@@ -403,7 +403,7 @@ namespace DirectInputManager {
     /// This function invokes the necessary events
     /// </summary>
     private static void OnDeviceChange(DBTEvents DBTEvent) {
-      //DebugLog($"[DirectInputManager] DeviceChange {DBTEvent.ToString()}");
+      //DebugLog($"DeviceChange {DBTEvent.ToString()}");
 
       ODCDebouncer.Debounce(() => { ScanDevicesForChanges(); });
     }
@@ -460,7 +460,7 @@ namespace DirectInputManager {
       }
 
       int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.Spring, conditions);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -483,7 +483,7 @@ namespace DirectInputManager {
       }
 
       int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.ConstantForce, conditions);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -511,7 +511,7 @@ namespace DirectInputManager {
       }
 
       int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.Spring, conditions);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -534,7 +534,7 @@ namespace DirectInputManager {
       }
 
       int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.Damper, conditions);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -558,7 +558,7 @@ namespace DirectInputManager {
       }
 
       int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.Friction, conditions);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
@@ -581,7 +581,7 @@ namespace DirectInputManager {
       }
 
       int hresult = Native.UpdateFFBEffect(guidInstance, FFBEffects.Inertia, conditions);
-      if (hresult != 0) { DebugLog($"[DirectInputManager] UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      if (hresult != 0) { DebugLog($"UpdateFFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
       return true;
     }
 
