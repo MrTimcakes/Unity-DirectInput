@@ -1,7 +1,7 @@
 {
   "name": "com.mrtimcakes.directinput",
   "displayName": "Unity DirectInput",
-  "version": "0.5.6",
+  "version": "0.6.0",
   "unity": "2021.1",
   "description": "Unity Native Plugin to expose DirectX DirectInput & ForceFeedback",
   "keywords": [
@@ -28,5 +28,20 @@
     "com.unity.inputsystem": "1.0.2"
   },
   "hideInEditor": false,
-  "unityRelease": "16f1"
+  "unityRelease": "16f1",
+  "author": {
+    "name": "MrTimcakes",
+    "email": "MrTimcakes@MrTimcakes.com",
+    "url": "https://www.MrTimcakes.com"
+  },
+  "license": "LGPL-3.0-only",
+  "licensesUrl": "https://github.com/MrTimcakes/Unity-DirectInput/blob/main/LICENSE",
+  "documentationUrl": "https://github.com/MrTimcakes/Unity-DirectInput/wiki",
+  "samples": [
+    {
+        "displayName": "Input System Inspector FFB Demo",
+        "description": "Sample for reading and controlling an FFB Device via the Inspector",
+        "path": "Plugin/Samples~/InputSystem"
+    }
+  ]
 }

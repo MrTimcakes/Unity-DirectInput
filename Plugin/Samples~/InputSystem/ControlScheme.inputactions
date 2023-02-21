@@ -1,0 +1,34 @@
+{
+    "name": "ControlScheme",
+    "maps": [
+        {
+            "name": "DirectInputDemo",
+            "id": "6521c747-88ae-480e-b67f-56d1aba5bd92",
+            "actions": [
+                {
+                    "name": "FFBAxis",
+                    "type": "Value",
+                    "id": "d7552ab3-002a-4a62-ac24-a2c1ad502165",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "89e4d092-c412-4bb2-a279-cc13e8da82bf",
+                    "path": "<DI_FANATEC Wheel>/X",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "FFBAxis",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
