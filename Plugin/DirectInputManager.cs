@@ -827,40 +827,38 @@ namespace DirectInputManager {
     }
   }
 
-}
+  /// <summary>
+  /// Only execute an Action after it hasn't been called for a timeout period <br/>
+  /// Setup: private static Debouncer DebouncerName = new Debouncer(300); // 300ms<br/>
+  /// Invocation: DebouncerName.Debounce(() => { Console.WriteLine("Executed"); });<br/>
+  /// Source: https://stackoverflow.com/a/47933557/3055031 (Modifed)
+  /// </summary>
+  public class Debouncer {
+    private List<CancellationTokenSource> CancelTokens = new List<CancellationTokenSource>();
+    private int TimeoutMs;
+    private readonly object _lockThis = new object();                    // Use a locking object to prevent the debouncer to trigger again while the func is still running
 
-/// <summary>
-/// Only execute an Action after it hasn't been called for a timeout period <br/>
-/// Setup: private static Debouncer DebouncerName = new Debouncer(300); // 300ms<br/>
-/// Invocation: DebouncerName.Debounce(() => { Console.WriteLine("Executed"); });<br/>
-/// Source: https://stackoverflow.com/a/47933557/3055031 (Modifed)
-/// </summary>
-public class Debouncer {
-  private List<CancellationTokenSource> CancelTokens = new List<CancellationTokenSource>();
-  private int TimeoutMs;
-  private readonly object _lockThis = new object();                    // Use a locking object to prevent the debouncer to trigger again while the func is still running
+    public Debouncer(int timeoutMs = 300) {
+      this.TimeoutMs = timeoutMs;
+    }
 
-  public Debouncer(int timeoutMs = 300) {
-    this.TimeoutMs = timeoutMs;
-  }
+    public void Debounce(Action TargetAction) {
+      CancelAllTokens();                                                 // Cancel existing Tokens Each invocation
+      var tokenSource = new CancellationTokenSource();                   // Token for this invocation
+      lock (_lockThis) { CancelTokens.Add(tokenSource); }                // Safely add this Token to the list
+      Task.Delay(TimeoutMs, tokenSource.Token).ContinueWith(task => {    // (Note: All Tasks continue)
+        if (!tokenSource.IsCancellationRequested) {                      // if this is the task that hasn't been canceled
+          CancelAllTokens();                                             // Clear
+          CancelTokens = new List<CancellationTokenSource>();            // Empty List
+          lock (_lockThis) { TargetAction(); }                           // Excute Action
+        }
+      }, TaskScheduler.FromCurrentSynchronizationContext());             // Perform on current thread
+    }
 
-  public void Debounce(Action TargetAction) {
-    CancelAllTokens();                                                 // Cancel existing Tokens Each invocation
-    var tokenSource = new CancellationTokenSource();                   // Token for this invocation
-    lock (_lockThis) { CancelTokens.Add(tokenSource); }                // Safely add this Token to the list
-    Task.Delay(TimeoutMs, tokenSource.Token).ContinueWith(task => {    // (Note: All Tasks continue)
-      if (!tokenSource.IsCancellationRequested) {                      // if this is the task that hasn't been canceled
-        CancelAllTokens();                                             // Clear
-        CancelTokens = new List<CancellationTokenSource>();            // Empty List
-        lock (_lockThis) { TargetAction(); }                           // Excute Action
+    private void CancelAllTokens() {
+      foreach (var token in CancelTokens) {
+        if (!token.IsCancellationRequested) { token.Cancel(); }
       }
-    }, TaskScheduler.FromCurrentSynchronizationContext());             // Perform on current thread
-  }
-
-  private void CancelAllTokens() {
-    foreach (var token in CancelTokens) {
-      if (!token.IsCancellationRequested) { token.Cancel(); }
     }
   }
-
 }
