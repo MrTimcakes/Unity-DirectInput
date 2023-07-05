@@ -225,41 +225,8 @@ namespace DirectInputExplorer {
     // Debug Functions
     //////////////////////////////////////////////////////////////
     private void ButtonDebug_Click(object sender, EventArgs e) {
-      //System.Diagnostics.Debug.WriteLine( DIManager.activeDevices.Count() );
-      //System.Diagnostics.Debug.WriteLine(string.Join("\n", DIManager.GetActiveDevices()));
-
-      //DIManager.EnableFFBEffect(DIManager.devices[ComboBoxDevices.SelectedIndex], EffectsType.ConstantForce);
-
-      //LabelDebug.Text = string.Join("\n", DIManager.GetDeviceFFBCapabilities(DIManager.devices[ComboBoxDevices.SelectedIndex]));
-      //var DebugData = DIManager.DEBUG1(DIManager.devices[ComboBoxDevices.SelectedIndex]);
-      //var DebugData = new String[]{ "Work", "Plz" };
-      //DebugData = DIManager.DEBUG1();
-      //var DoubleData = Array.ConvertAll(DebugData, Double.Parse);
-      //LabelDebug.Text = string.Join("\n", DebugData);
-      //System.Diagnostics.Debug.WriteLine( string.Join("\n", DebugData));
-      //System.Diagnostics.Debug.WriteLine($"Avg: {DoubleData.Average()}");
-      //LabelDebug.Text = string.Join("\n", DIManager.DEBUG1(DIManager.devices[ComboBoxDevices.SelectedIndex]));
-
-      DeviceInfo ActDevice = DIManager.devices[ComboBoxDevices.SelectedIndex];
-
-      FlatJoyState2 state = DIManager.GetDeviceState(ActDevice);
-      var hash = state.GetHashCode();
-
-      /*//
-      MD5 md5 = new MD5CryptoServiceProvider();
-      int size = Marshal.SizeOf(state);
-      byte[] StateRawBytes = new byte[size];
-
-      IntPtr ptr = Marshal.AllocHGlobal(size);
-      Marshal.StructureToPtr(state, ptr, true);
-      Marshal.Copy(ptr, StateRawBytes, 0, size);
-      Marshal.FreeHGlobal(ptr);
-
-      byte[] MD5Hash = md5.ComputeHash(StateRawBytes);
-
-      //*/
-
-      System.Diagnostics.Debug.WriteLine($"DBG {hash}");
+      //DirectInputManager.Native.DEBUG1(DIManager.devices[ComboBoxDevices.SelectedIndex].guidInstance, out string[] DEBUGDATA);
+      //LabelDebug.Text = string.Join("\n", DEBUGDATA);
     }
   }
 }
