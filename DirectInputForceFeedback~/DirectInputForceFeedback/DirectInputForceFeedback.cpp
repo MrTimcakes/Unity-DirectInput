@@ -417,6 +417,29 @@ HRESULT DEBUG1(LPCSTR guidInstance, /*[out]*/ SAFEARRAY** DebugData) {
   //_DeviceFFBEffectControl[GUIDString][Effects::ConstantForce]->SetParameters(&_DeviceFFBEffectConfig[GUIDString][Effects::ConstantForce], DIEP_TYPESPECIFICPARAMS);
   //hr = BuildSafeArray(SAData, DebugData);
 
+
+
+  // Testing Fanatec Fix
+  LPDIRECTINPUTDEVICE8 DIDevice = nullptr;
+  if (FAILED(hr = _DirectInput->CreateDevice(LPCSTRGUIDtoGUID(guidInstance), &DIDevice, NULL))) { return true; } // L"CreateDevice failed! 0x%08x", hr
+
+  DIPROPGUIDANDPATH GUIDPath;
+  GUIDPath.diph.dwSize = sizeof(DIPROPGUIDANDPATH);
+  GUIDPath.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+  GUIDPath.diph.dwObj = 0;
+  GUIDPath.diph.dwHow = DIPH_DEVICE;
+  if (FAILED(hr = DIDevice->GetProperty(DIPROP_GUIDANDPATH, &GUIDPath.diph))) { DIDevice->Release(); return true; } // L"GetProperty failed! Failed to get symbolic path for device 0x%08x", hr
+  DIDevice->Release();
+
+  //if (wcsstr(GUIDPath.wszPath, L"&col01") != 0) { // This is our primary device (HID Path contains "&col01")
+  //  return false;
+  //}
+  //else {
+  //  return true; // This is a duplicate device
+  //}
+  DEBUGDATA.push_back(GUIDPath.wszPath);
+
+
   hr = BuildSafeArray(DEBUGDATA, DebugData);
   return hr;
 }
@@ -764,22 +787,23 @@ GUID EffectTypeToGUID(Effects::Type effectType) {
   }
 }
 
-bool IsDuplicateHID(const DIDEVICEINSTANCE *DIDI) {
-  HRESULT hr;
-  LPDIRECTINPUTDEVICE8 DIDevice = nullptr;
-  if (FAILED(hr = _DirectInput->CreateDevice(DIDI->guidInstance, &DIDevice, NULL))) { return true; } // L"CreateDevice failed! 0x%08x", hr
+bool IsDuplicateHID(const DIDEVICEINSTANCE* DIDI) {
+	HRESULT hr;
+	LPDIRECTINPUTDEVICE8 DIDevice = nullptr;
+	if (FAILED(hr = _DirectInput->CreateDevice(DIDI->guidInstance, &DIDevice, NULL))) { return true; } // L"CreateDevice failed! 0x%08x", hr
 
-  DIPROPGUIDANDPATH GUIDPath;
-  GUIDPath.diph.dwSize = sizeof(DIPROPGUIDANDPATH);
-  GUIDPath.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-  GUIDPath.diph.dwObj = 0;
-  GUIDPath.diph.dwHow = DIPH_DEVICE;
-  if (FAILED(hr = DIDevice->GetProperty(DIPROP_GUIDANDPATH, &GUIDPath.diph))) { DIDevice->Release(); return true; } // L"GetProperty failed! Failed to get symbolic path for device 0x%08x", hr
-  DIDevice->Release();
+	DIPROPGUIDANDPATH GUIDPath;
+	GUIDPath.diph.dwSize = sizeof(DIPROPGUIDANDPATH);
+	GUIDPath.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+	GUIDPath.diph.dwObj = 0;
+	GUIDPath.diph.dwHow = DIPH_DEVICE;
+	if (FAILED(hr = DIDevice->GetProperty(DIPROP_GUIDANDPATH, &GUIDPath.diph))) { DIDevice->Release(); return true; } // L"GetProperty failed! Failed to get symbolic path for device 0x%08x", hr
+	DIDevice->Release();
 
-  if (wcsstr(GUIDPath.wszPath, L"&col01") != 0) { // This is our primary device (HID Path contains "&col01")
-    return false;
-  } else {
-    return true; // This is a duplicate device
-  }
+	if (wcsstr(GUIDPath.wszPath, L"&col02") != 0) { // This is a duplicate device (HID Path contains "&col02")
+		return true;
+	}
+	else {
+		return false; // This is our primary device
+	}
 }
