@@ -1,8 +1,8 @@
 {
   "name": "com.mrtimcakes.directinput",
   "displayName": "Unity DirectInput",
-  "version": "0.6.0",
-  "unity": "2021.1",
+  "version": "0.6.1",
+  "unity": "2022.3",
   "description": "Unity Native Plugin to expose DirectX DirectInput & ForceFeedback",
   "keywords": [
     "direct",
@@ -28,7 +28,7 @@
     "com.unity.inputsystem": "1.0.2"
   },
   "hideInEditor": false,
-  "unityRelease": "16f1",
+  "unityRelease": "4f1",
   "author": {
     "name": "MrTimcakes",
     "email": "MrTimcakes@MrTimcakes.com",
