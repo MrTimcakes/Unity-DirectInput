@@ -57,6 +57,7 @@ Next, install this package:
 | [Fanatec ClubSport Shifter SQ V 1.5](https://fanatec.com/eu-en/shifters-others/clubsport-shifter-sq-v-1.5) | ✅ Verified    |
 | [Logitech G29 / G920](https://www.logitechg.com/en-gb/products/driving/driving-force-racing-wheel.html) | ✅ Verified    |
 | [PRO Racing Wheel](https://www.logitechg.com/en-gb/products/driving/pro-racing-wheel.html) | 🔲 Untested    |
+| [Thrustmaster T300 Racing Wheel](https://eshop.thrustmaster.com/en_us/t300-ferrari-integral-racing-wheel-alcantara-edition.html) | ✅ Verified  |
 
 [comment]: <> (✅ 🔲)
 
