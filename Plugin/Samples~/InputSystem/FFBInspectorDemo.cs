@@ -37,6 +37,13 @@ public class FFBInspectorDemo : MonoBehaviour {
 	[Range(0, 10000f)] public int SpringCoefficient;
 	[Range(0, 10000f)] public uint SpringSaturation;
 
+	
+	[Header("FFB Peroidic Force")]
+	public bool PeroidicForceEnabled = false;
+	[Range(-10000f, 10000f)] public int PeroidicForceMagnitude;
+	[Range(0f, 10000f)] public int PeroidicForceDuration;
+	public FFBEffects PeroidicFFBEffect;
+
 	void Start() {
 		Actions = ControlScheme.FindActionMap("DirectInputDemo");													      // Find the correct action map 
 		Actions.Enable();
@@ -60,7 +67,14 @@ public class FFBInspectorDemo : MonoBehaviour {
       DIManager.EnableFFBEffect(ISDevice.description.serial, FFBEffects.Friction);
       DIManager.EnableFFBEffect(ISDevice.description.serial, FFBEffects.Inertia);
       DIManager.EnableFFBEffect(ISDevice.description.serial, FFBEffects.Spring);
-		}
+
+      DIManager.EnablePeroidicFFBEffect(ISDevice.description.serial, PeroidicFFBEffect);
+      
+      DIDEVCAPS dd = DIManager.GetDeviceCapabilities(ISDevice.description.serial);
+      
+      print("Device Capabilites " +dd.dwFlags.ToString());
+
+    }
 
 		if (ISDevice is not null) {
 			FFBAxisValue = Actions.FindAction("FFBAxis").ReadValue<float>(); // Poll state of input axis
@@ -69,12 +83,19 @@ public class FFBInspectorDemo : MonoBehaviour {
 			if (FrictionForceEnabled) { DIManager.UpdateFrictionSimple(ISDevice.description.serial, FrictionMagnitude); }
 			if (InertiaForceEnabled) 	{ DIManager.UpdateInertiaSimple(ISDevice.description.serial, InertiaMagnitude); }
 			if (SpringForceEnabled) 	{ DIManager.UpdateSpringSimple(ISDevice.description.serial, SpringDeadband, SpringOffset, SpringCoefficient, SpringCoefficient, SpringSaturation, SpringSaturation); }
+
+			if (PeroidicForceEnabled)
+			{
+				DIManager.UpdatePeroidEffect(ISDevice.description.serial, PeroidicFFBEffect, PeroidicForceMagnitude,
+					PeroidicForceDuration);
+			}
 		}
 	}
-
+	
 	void OnDestroy(){
     if(ISDevice != null){
       DIManager.StopAllFFBEffects(ISDevice.description.serial);
+      DIManager.DestroyPeroidicFFBEffect(ISDevice.description.serial);
     }
   }
 }

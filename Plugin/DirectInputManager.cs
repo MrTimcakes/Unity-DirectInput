@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS0618 // Disable Marshalling warnings
+#pragma warning disable CS0618 // Disable Marshalling warnings
 
 using System;
 using System.Collections.Generic;
@@ -34,6 +34,13 @@ namespace DirectInputManager {
     [DllImport(DLLFile)] public static extern int CreateFFBEffect(string guidInstance, FFBEffects effectType);
     [DllImport(DLLFile)] public static extern int DestroyFFBEffect(string guidInstance, FFBEffects effectType);
     [DllImport(DLLFile)] public static extern int UpdateFFBEffect(string guidInstance, FFBEffects effectType, DICondition[] conditions);
+    
+    ///////////CUSTOM CODE START --- DHRUV RATHOD @RATHOD-DHRUV
+    [DllImport(DLLFile, CallingConvention = CallingConvention.Cdecl)] public static extern int CreatePeriodicFFBEffect(string guidInstance, FFBEffects effectType);
+    [DllImport(DLLFile,CallingConvention = CallingConvention.Cdecl)] public static extern int DestroyPeriodicFFBEffect(string guidInstance);
+    [DllImport(DLLFile,CallingConvention = CallingConvention.Cdecl)] public static extern int UpdatePeriodicFFBEffect(string guidInstance, FFBEffects effectType, int magnitude, int duration);
+
+    ///////////CUSTOM CODE END --- DHRUV RATHOD @RATHOD-DHRUV
     [DllImport(DLLFile)] public static extern int StopAllFFBEffects(string guidInstance);
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)] public delegate void DeviceChangeCallback(DBTEvents DBTEvent);
@@ -761,6 +768,38 @@ namespace DirectInputManager {
     /// A boolean representing the if the Effect updated successfully
     /// </returns>
     public static bool UpdateInertiaSimple(DeviceInfo device, int Magnitude) => UpdateInertiaSimple(device.guidInstance, Magnitude);
+    
+    
+    ///////////CUSTOM CODE START --- DHRUV RATHOD @RATHOD-DHRUV
+    
+    public static bool EnablePeroidicFFBEffect(DeviceInfo device, FFBEffects effectType) => EnablePeroidicFFBEffect(device.guidInstance, effectType );
+    public static bool EnablePeroidicFFBEffect(string guidInstance, FFBEffects effectType) {
+      int hresult = Native.CreatePeriodicFFBEffect(guidInstance, effectType);
+      if (hresult != 0) { DebugLog($"CreatePeriodic FFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
+    
+    public static bool DestroyPeroidicFFBEffect(DeviceInfo device) => DestroyPeroidicFFBEffect(device.guidInstance );
+    public static bool DestroyPeroidicFFBEffect(string guidInstance) {
+      int hresult = Native.DestroyPeriodicFFBEffect(guidInstance);
+      if (hresult != 0) { DebugLog($"DestroyPeriodic FFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
+
+    
+    
+    public static bool UpdatePeroidEffect(DeviceInfo device, FFBEffects effectType, int Magnitude, int duration = 100000) => UpdatePeroidEffect(device.guidInstance,effectType, Magnitude, duration);
+    
+    public static bool UpdatePeroidEffect(string guidInstance, FFBEffects effectType, int Magnitude, int duration = 100000) {
+     
+      int hresult = Native.UpdatePeriodicFFBEffect(guidInstance, effectType, Magnitude, duration);
+      if (hresult != 0) { DebugLog($"UpdatePeroidic FFBEffect Failed: 0x{hresult.ToString("x")} {WinErrors.GetSystemMessage(hresult)}"); return false; }
+      return true;
+    }
+    
+    
+    
+    ///////////CUSTOM CODE END --- DHRUV RATHOD @RATHOD-DHRUV
 
   } // End of DIManager
 

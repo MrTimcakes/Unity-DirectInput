@@ -72,7 +72,7 @@ extern "C" { // Everything to be made available by the DLL
       Damper = 8,
       Inertia = 9,
       Friction = 10,
-      CustomForce = 11
+      CustomForce = 11,
     };
   };
 
@@ -95,6 +95,12 @@ extern "C" { // Everything to be made available by the DLL
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              DestroyFFBEffect(LPCSTR guidInstance, Effects::Type effectType);
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              UpdateFFBEffect(LPCSTR guidInstance, Effects::Type effectType, DICONDITION* conditions);
   DIRECTINPUTFORCEFEEDBACK_API HRESULT              StopAllFFBEffects(LPCSTR guidInstance);
+
+  ///////////CUSTOM CODE START --- DHRUV RATHOD @RATHOD-DHRUV
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT CreatePeriodicFFBEffect(LPCSTR guidInstance, Effects::Type effectType);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT DestroyPeriodicFFBEffect(LPCSTR guidInstance);
+  DIRECTINPUTFORCEFEEDBACK_API HRESULT UpdatePeriodicFFBEffect(LPCSTR guidInstance, Effects::Type effectType, int magnitude, int duration);
+  ///////////CUSTOM CODE END --- DHRUV RATHOD @RATHOD-DHRUV
 
   typedef void(__stdcall* DeviceChangeCallback)(int);
   DIRECTINPUTFORCEFEEDBACK_API void                 SetDeviceChangeCallback(DeviceChangeCallback CB);

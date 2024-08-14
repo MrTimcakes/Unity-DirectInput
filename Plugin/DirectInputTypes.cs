@@ -17,8 +17,8 @@ namespace DirectInputManager {
     Damper = 8,
     Inertia = 9,
     Friction = 10,
-    CustomForce = 11
-  }
+    CustomForce = 11,
+    }
 
   /// <summary>
   /// Types of OnDeviceChange DBTEvents<br/>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
 using DirectInputManager;
@@ -90,7 +91,14 @@ namespace DirectInputExplorer {
       FFBEffects TriggeringEffectType = (FFBEffects)Enum.Parse(typeof(FFBEffects), TriggeringCheckBox.Tag.ToString());
 
       if (TriggeringCheckBox.Checked) { // Enable the effect
-        TriggeringCheckBox.Checked = DIManager.EnableFFBEffect(DIManager.devices[ComboBoxDevices.SelectedIndex], TriggeringEffectType); // If enable fails, checkbox will be unchecked
+
+        if (TriggeringEffectType == FFBEffects.Inertia)
+        { 
+          Debug.Write("PRINT BUMP");
+          DIManager.EnablePeroidicFFBEffect(DIManager.devices[ComboBoxDevices.SelectedIndex], FFBEffects.ConstantForce);
+        }
+        else
+          TriggeringCheckBox.Checked = DIManager.EnableFFBEffect(DIManager.devices[ComboBoxDevices.SelectedIndex], TriggeringEffectType); // If enable fails, checkbox will be unchecked
       } else { // Disable the effect
         TriggeringCheckBox.Checked = !DIManager.DestroyFFBEffect(DIManager.devices[ComboBoxDevices.SelectedIndex], TriggeringEffectType);
       }
@@ -159,7 +167,7 @@ namespace DirectInputExplorer {
           DIManager.UpdateFrictionSimple(ActiveDevice, (int)((TrigElement.Parent.Controls.Find("UDFrictionMagnitude", false).FirstOrDefault() as NumericUpDown).Value));
           break;
         case "Inertia":
-          DIManager.UpdateInertiaSimple(ActiveDevice, (int)((TrigElement.Parent.Controls.Find("UDInertiaMagnitude", false).FirstOrDefault() as NumericUpDown).Value));
+          DIManager.UpdatePeroidEffect(ActiveDevice, FFBEffects.ConstantForce,(int)((TrigElement.Parent.Controls.Find("UDInertiaMagnitude", false).FirstOrDefault() as NumericUpDown).Value));
           break;
         default:
           break;
