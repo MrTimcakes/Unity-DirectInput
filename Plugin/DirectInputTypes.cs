@@ -18,13 +18,20 @@ namespace DirectInputManager {
     Inertia = 9,
     Friction = 10,
     CustomForce = 11
-  }
+    }
 
-  /// <summary>
-  /// Types of OnDeviceChange DBTEvents<br/>
-  /// More info: https://docs.microsoft.com/en-us/windows/win32/devio/wm-devicechange
-  /// </summary>
-  public enum DBTEvents {
+    public struct CustomForceData
+    {
+        public int[] ForceData;      // Array of force values
+        public uint SamplePeriod;    // Time in microseconds between samples
+        public uint Channels;        // Number of channels (typically 1)
+    }
+
+    /// <summary>
+    /// Types of OnDeviceChange DBTEvents<br/>
+    /// More info: https://docs.microsoft.com/en-us/windows/win32/devio/wm-devicechange
+    /// </summary>
+    public enum DBTEvents {
     DBT_DEVNODES_CHANGED        = 0x0007,
     DBT_QUERYCHANGECONFIG       = 0x0017,
     DBT_CONFIGCHANGED           = 0x0018,
